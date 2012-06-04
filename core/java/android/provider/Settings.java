@@ -3778,6 +3778,12 @@ public final class Settings {
         public static final String SYS_PROP_SETTING_VERSION = "sys.settings_secure_version";
 
         /**
+         * The hostname for this device
+         * @hide
+         */
+        public static final String DEVICE_HOSTNAME = "device_hostname";
+
+        /**
          * The content:// style URL for this table
          */
         public static final Uri CONTENT_URI =
