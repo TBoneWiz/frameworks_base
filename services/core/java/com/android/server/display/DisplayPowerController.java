@@ -330,6 +330,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 com.android.internal.R.integer.config_autoBrightnessLightSensorRate);
         long brighteningLightDebounce = resources.getInteger(
                 com.android.internal.R.integer.config_autoBrightnessBrighteningLightDebounce);
+        long brighteningLightFastDebounce = resources.getInteger(
+                com.android.internal.R.integer.config_autoBrightnessBrighteningLightFastDebounce);
         long darkeningLightDebounce = resources.getInteger(
                 com.android.internal.R.integer.config_autoBrightnessDarkeningLightDebounce);
         boolean autoBrightnessResetAmbientLuxAfterWarmUp = resources.getBoolean(
@@ -370,7 +372,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                         handler.getLooper(), sensorManager, screenAutoBrightnessSpline,
                         lightSensorWarmUpTimeConfig, screenBrightnessRangeMinimum,
                         mScreenBrightnessRangeMaximum, dozeScaleFactor, lightSensorRate,
-                        brighteningLightDebounce, darkeningLightDebounce,
+                        brighteningLightDebounce, brighteningLightFastDebounce, darkeningLightDebounce,
                         autoBrightnessResetAmbientLuxAfterWarmUp);
             }
         }
@@ -664,7 +666,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         // Disable button lights when dozing
         if (state == Display.STATE_DOZE || state == Display.STATE_DOZE_SUSPEND) {
             mLights.getLight(LightsManager.LIGHT_ID_BUTTONS).setBrightness(PowerManager.BRIGHTNESS_OFF);
-            mLights.getLight(LightsManager.LIGHT_ID_KEYBOARD).setBrightness(brightness);
+            mLights.getLight(LightsManager.LIGHT_ID_KEYBOARD).setBrightness(PowerManager.BRIGHTNESS_OFF);
         }
 
         // Configure auto-brightness.
