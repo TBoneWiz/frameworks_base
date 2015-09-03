@@ -15952,10 +15952,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         RenderNode renderNode = null;
         Bitmap cache = null;
         int layerType = getLayerType(); // TODO: signify cache state with just 'cache' local
-        if (!drawingWithRenderNode && layerType != LAYER_TYPE_NONE) {
-            // If not drawing with RenderNode, treat HW layers as SW
-            layerType = LAYER_TYPE_SOFTWARE;
-            buildDrawingCache(true);
+        if (layerType == LAYER_TYPE_SOFTWARE || !drawingWithRenderNode) {
+            if (layerType != LAYER_TYPE_NONE && layerType != LAYER_TYPE_SOFTWARE) {
+                // If not drawing with RenderNode, treat HW layers as SW
+                layerType = LAYER_TYPE_SOFTWARE;
+                buildDrawingCache(true);
+            }
             cache = getDrawingCache(true);
         }
 
