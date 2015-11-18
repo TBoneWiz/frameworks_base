@@ -326,10 +326,8 @@ public class WifiTracker {
                 }
                 AccessPoint accessPoint = getCachedOrCreate(config, cachedAccessPoints);
                 accessPoint.foundInScanResult = false;
-                if (mLastInfo != null && mLastNetworkInfo != null) {
-                    if (config.isPasspoint() == false) {
-                        accessPoint.update(connectionConfig, mLastInfo, mLastNetworkInfo);
-                    }
+                if (config.isPasspoint() == false) {
+                    accessPoint.update(connectionConfig, mLastInfo, mLastNetworkInfo);
                 }
                 if (mIncludeSaved) {
                     if (!config.isPasspoint() || mIncludePasspoints)
