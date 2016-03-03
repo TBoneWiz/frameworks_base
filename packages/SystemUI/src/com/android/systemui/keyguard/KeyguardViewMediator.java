@@ -761,7 +761,7 @@ public class KeyguardViewMediator extends SystemUI {
         intent.putExtra("seq", mDelayedShowingSequence);
         PendingIntent sender = PendingIntent.getBroadcast(mContext,
                 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-        mAlarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, when, sender);
+        mAlarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, when, sender);
         if (DEBUG) Log.d(TAG, "setting alarm to turn off keyguard, seq = "
                          + mDelayedShowingSequence);
     }
