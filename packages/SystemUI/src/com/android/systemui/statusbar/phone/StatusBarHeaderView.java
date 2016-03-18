@@ -356,7 +356,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         if (mSignalCluster != null) {
             updateSignalClusterDetachment();
         }
-        mEmergencyCallsOnly.setVisibility(mExpanded && mShowEmergencyCallsOnly ? VISIBLE : GONE);
+        mEmergencyCallsOnly.setVisibility(mExpanded && mShowEmergencyCallsOnly ? View.VISIBLE : View.GONE);
         mBatteryLevel.setVisibility(mExpanded ? View.VISIBLE : View.GONE);
         View tunerIcon = mSettingsContainer.findViewById(R.id.tuner_icon);
         if (tunerIcon != null) {
@@ -823,10 +823,10 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
                 mQsDetailHeaderTitle.setText(detail.getTitle());
                 final Boolean toggleState = detail.getToggleState();
                 if (toggleState == null) {
-                    mQsDetailHeaderSwitch.setVisibility(INVISIBLE);
+                    mQsDetailHeaderSwitch.setVisibility(View.INVISIBLE);
                     mQsDetailHeader.setClickable(false);
                 } else {
-                    mQsDetailHeaderSwitch.setVisibility(VISIBLE);
+                    mQsDetailHeaderSwitch.setVisibility(View.VISIBLE);
                     mQsDetailHeaderSwitch.setChecked(toggleState);
                     mQsDetailHeader.setClickable(true);
                     mQsDetailHeader.setOnClickListener(new OnClickListener() {
@@ -846,7 +846,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         private void transition(final View v, final boolean in) {
             if (in) {
                 v.bringToFront();
-                v.setVisibility(VISIBLE);
+                v.setVisibility(View.VISIBLE);
             }
             if (v.hasOverlappingRendering()) {
                 v.animate().withLayer();
@@ -857,7 +857,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
                         @Override
                         public void run() {
                             if (!in) {
-                                v.setVisibility(INVISIBLE);
+                                v.setVisibility(View.INVISIBLE);
                             }
                             mDetailTransitioning = false;
                         }
