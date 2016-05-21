@@ -669,6 +669,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private static final int MSG_POWER_DELAYED_PRESS = 13;
     private static final int MSG_POWER_LONG_PRESS = 14;
     private static final int MSG_UPDATE_DREAMING_SLEEP_TOKEN = 15;
+    private static final int MSG_DISPOSE_INPUT_CONSUMER = 16;
     boolean mWifiDisplayConnected = false;
     int mWifiDisplayCustomRotation = -1;
 
@@ -721,6 +722,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     break;
                 case MSG_UPDATE_DREAMING_SLEEP_TOKEN:
                     updateDreamingSleepToken(msg.arg1 != 0);
+                    break;
+                case MSG_DISPOSE_INPUT_CONSUMER:
+                    disposeInputConsumer((InputConsumer) msg.obj);
                     break;
             }
         }
@@ -1179,6 +1183,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             sendCloseSystemWindows(SYSTEM_DIALOG_REASON_GLOBAL_ACTIONS);
             mWindowManagerFuncs.shutdown(behavior == LONG_PRESS_POWER_SHUT_OFF);
             break;
+        }
+    }
+
+    private void disposeInputConsumer(InputConsumer inputConsumer) {
+        if (inputConsumer != null) {
+            inputConsumer.dismiss();
         }
     }
 
@@ -3565,6 +3575,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         // When the user taps down, we re-show the nav bar.
                         boolean changed = false;
                         synchronized (mWindowManagerFuncs.getWindowManagerLock()) {
+                            if (mInputConsumer == null) {
+                                return;
+                            }
                             // Any user activity always causes us to show the
                             // navigation controls, if they had been hidden.
                             // We also clear the low profile and only content
@@ -3791,7 +3804,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             // bar and ensure the application doesn't see the event.
             if (navVisible || navAllowedHidden) {
                 if (mInputConsumer != null) {
-                    mInputConsumer.dismiss();
+                    mHandler.sendMessage(
+                            mHandler.obtainMessage(MSG_DISPOSE_INPUT_CONSUMER, mInputConsumer));
                     mInputConsumer = null;
                 }
             } else if (mInputConsumer == null) {
