@@ -1321,14 +1321,17 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
                                                     BluetoothAdapter.STATE_OFF);
                         sendBluetoothServiceDownCallback();
 
-                        mBluetoothLock.writeLock().lock();
-                        if (mBluetooth != null) {
-                            mBluetooth = null;
-                            // Unbind
-                            mContext.unbindService(mConnection);
+                        try {
+                            mBluetoothLock.writeLock().lock();
+                            if (mBluetooth != null) {
+                                mBluetooth = null;
+                                // Unbind
+                                mContext.unbindService(mConnection);
+                            }
+                            mBluetoothGatt = null;
+                        } finally {
+                            mBluetoothLock.writeLock().unlock();
                         }
-                        mBluetoothGatt = null;
-                        mBluetoothLock.writeLock().unlock();
 
                         SystemClock.sleep(100);
 
@@ -1696,14 +1699,17 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
 
         sendBluetoothServiceDownCallback();
 
-        mBluetoothLock.writeLock().lock();
-        if (mBluetooth != null) {
-            mBluetooth = null;
-            // Unbind
-            mContext.unbindService(mConnection);
+        try {
+            mBluetoothLock.writeLock().lock();
+            if (mBluetooth != null) {
+                mBluetooth = null;
+                // Unbind
+                mContext.unbindService(mConnection);
+            }
+            mBluetoothGatt = null;
+        } finally {
+            mBluetoothLock.writeLock().unlock();
         }
-        mBluetoothGatt = null;
-        mBluetoothLock.writeLock().unlock();
 
         mHandler.removeMessages(MESSAGE_BLUETOOTH_STATE_CHANGE);
         mState = BluetoothAdapter.STATE_OFF;
