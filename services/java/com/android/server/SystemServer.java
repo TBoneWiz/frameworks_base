@@ -604,14 +604,6 @@ public final class SystemServer {
             reportWtf("performing boot dexopt", e);
         }
 
-        try {
-            ActivityManagerNative.getDefault().showBootMessage(
-                    context.getResources().getText(
-                            com.android.internal.R.string.android_upgrading_starting_apps),
-                    false);
-        } catch (RemoteException e) {
-        }
-
         if (mFactoryTestMode != FactoryTest.FACTORY_TEST_LOW_LEVEL) {
             if (!disableNonCoreServices) {
                 try {
