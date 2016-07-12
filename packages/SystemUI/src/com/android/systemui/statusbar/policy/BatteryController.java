@@ -63,12 +63,16 @@ public class BatteryController extends BroadcastReceiver {
     }
 
     public void addStateChangedCallback(BatteryStateChangeCallback cb) {
-        mChangeCallbacks.add(cb);
+        synchronized (mChangeCallbacks) {
+            mChangeCallbacks.add(cb);
+        }
         cb.onBatteryLevelChanged(mLevel, mPluggedIn, mCharging);
     }
 
     public void removeStateChangedCallback(BatteryStateChangeCallback cb) {
-        mChangeCallbacks.remove(cb);
+        synchronized (mChangeCallbacks) {
+            mChangeCallbacks.remove(cb);
+        }
     }
 
     public void onReceive(Context context, Intent intent) {
@@ -108,16 +112,20 @@ public class BatteryController extends BroadcastReceiver {
     }
 
     private void fireBatteryLevelChanged() {
-        final int N = mChangeCallbacks.size();
-        for (int i = 0; i < N; i++) {
-            mChangeCallbacks.get(i).onBatteryLevelChanged(mLevel, mPluggedIn, mCharging);
+        synchronized (mChangeCallbacks) {
+            final int N = mChangeCallbacks.size();
+            for (int i = 0; i < N; i++) {
+                mChangeCallbacks.get(i).onBatteryLevelChanged(mLevel, mPluggedIn, mCharging);
+            }
         }
     }
 
     private void firePowerSaveChanged() {
-        final int N = mChangeCallbacks.size();
-        for (int i = 0; i < N; i++) {
-            mChangeCallbacks.get(i).onPowerSaveChanged();
+        synchronized (mChangeCallbacks) {
+            final int N = mChangeCallbacks.size();
+            for (int i = 0; i < N; i++) {
+                mChangeCallbacks.get(i).onPowerSaveChanged();
+            }
         }
     }
 
