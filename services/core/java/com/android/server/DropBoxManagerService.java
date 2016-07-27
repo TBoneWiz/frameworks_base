@@ -728,8 +728,9 @@ public final class DropBoxManagerService extends IDropBoxManagerService.Stub {
             int quotaKb = Settings.Global.getInt(mContentResolver,
                     Settings.Global.DROPBOX_QUOTA_KB, DEFAULT_QUOTA_KB);
 
+            String dirPath = mDropBoxDir.getPath();
             try {
-                mStatFs.restat(mDropBoxDir.getPath());
+                mStatFs.restat(dirPath);
             } catch (IllegalArgumentException e) {  // restat throws this on error
                 throw new IOException("Can't restat: " + mDropBoxDir);
             }
