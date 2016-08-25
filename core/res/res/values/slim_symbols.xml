@@ -50,4 +50,7 @@
     <java-symbol type="string" name="reboot_system" />
     <java-symbol type="string" name="reboot_progress" />
 
+    <!-- Usb drive persistent notification -->
+    <java-symbol type="bool" name="config_persistUsbDriveNotification" />
+
 </resources>
