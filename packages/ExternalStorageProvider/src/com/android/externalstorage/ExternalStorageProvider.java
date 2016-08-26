@@ -169,7 +169,15 @@ public class ExternalStorageProvider extends DocumentsProvider {
                     root.visiblePath = null;
                 }
                 root.path = volume.getInternalPathForUser(userId);
-                root.docId = getDocIdForFile(root.path);
+
+                // Force all ext4/f2fs sdcard acccess through the sdcard FUSE layer to ensure the
+                // correct permissions for accessing files and directories.
+                if (volume.getType() == VolumeInfo.TYPE_PUBLIC && root.visiblePath != null
+                    && ("ext4".equals(volume.fsType) || "f2fs".equals(volume.fsType))) {
+                    root.path = root.visiblePath;
+                }
+
+               root.docId = getDocIdForFile(root.path);
 
             } catch (FileNotFoundException e) {
                 throw new IllegalStateException(e);
