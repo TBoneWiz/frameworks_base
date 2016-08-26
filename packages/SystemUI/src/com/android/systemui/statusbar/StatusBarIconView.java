@@ -192,11 +192,15 @@ public class StatusBarIconView extends AnimatedImageView {
      *         be found
      */
     public static Drawable getIcon(Context context, StatusBarIcon icon) {
-        int userId = icon.user.getIdentifier();
-        if (userId == UserHandle.USER_ALL) {
-            userId = UserHandle.USER_OWNER;
+        int userId;
+        if (icon != null) {
+            userId = icon.user.getIdentifier();
+            if (userId == UserHandle.USER_ALL) {
+                userId = UserHandle.USER_OWNER;
+            }
+            return icon.icon.loadDrawableAsUser(context, userId);
         }
-        return icon.icon.loadDrawableAsUser(context, userId);
+        return null;
     }
 
     public StatusBarIcon getStatusBarIcon() {
