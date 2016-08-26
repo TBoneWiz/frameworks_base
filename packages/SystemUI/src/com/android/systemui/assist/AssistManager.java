@@ -123,7 +123,8 @@ public class AssistManager {
     }
 
     public void startAssist(Bundle args) {
-        updateAssistInfo();
+        onConfigurationChanged();
+		updateAssistInfo();
         if (mAssistComponent == null) {
             return;
         }
