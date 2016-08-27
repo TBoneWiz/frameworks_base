@@ -96,6 +96,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import org.slim.provider.SlimSettings;
 
 import libcore.io.Streams;
 import libcore.util.Objects;
@@ -197,6 +198,7 @@ public class InputManagerService extends IInputManager.Stub
             InputChannel fromChannel, InputChannel toChannel);
     private static native void nativeSetPointerSpeed(long ptr, int speed);
     private static native void nativeSetShowTouches(long ptr, boolean enabled);
+    private static native void nativeSetVolumeKeysRotation(long ptr, int mode);
     private static native void nativeSetInteractive(long ptr, boolean interactive);
     private static native void nativeReloadCalibration(long ptr);
     private static native void nativeVibrate(long ptr, int deviceId, long[] pattern,
@@ -305,17 +307,20 @@ public class InputManagerService extends IInputManager.Stub
 
         registerPointerSpeedSettingObserver();
         registerShowTouchesSettingObserver();
+        registerVolumeKeysRotationSettingObserver();
 
         mContext.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 updatePointerSpeedFromSettings();
                 updateShowTouchesFromSettings();
+                updateVolumeKeysRotationFromSettings();
             }
         }, new IntentFilter(Intent.ACTION_USER_SWITCHED), null, mHandler);
 
         updatePointerSpeedFromSettings();
         updateShowTouchesFromSettings();
+		updateVolumeKeysRotationFromSettings();
     }
 
     // TODO(BT) Pass in paramter for bluetooth system
@@ -1356,6 +1361,33 @@ public class InputManagerService extends IInputManager.Stub
         }
         return result;
     }
+
+    public void updateVolumeKeysRotationFromSettings() {
+        int mode = getVolumeKeysRotationSetting(0);
+        nativeSetVolumeKeysRotation(mPtr, mode);
+    }
+
+    public void registerVolumeKeysRotationSettingObserver() {
+        mContext.getContentResolver().registerContentObserver(
+                SlimSettings.System.getUriFor(SlimSettings.System.SWAP_VOLUME_KEYS_ON_ROTATION), false,
+                new ContentObserver(mHandler) {
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        updateVolumeKeysRotationFromSettings();
+                    }
+                });
+    }
+
+    private int getVolumeKeysRotationSetting(int defaultValue) {
+        int result = defaultValue;
+        try {
+            result = SlimSettings.System.getIntForUser(mContext.getContentResolver(),
+                    SlimSettings.System.SWAP_VOLUME_KEYS_ON_ROTATION, UserHandle.USER_CURRENT);
+        } catch (SlimSettings.SlimSettingNotFoundException snfe) {
+        }
+        return result;
+    }
+
 
     // Binder call
     @Override
