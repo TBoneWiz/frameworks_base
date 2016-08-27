@@ -113,6 +113,7 @@ import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerService;
 
 import org.xmlpull.v1.XmlPullParserException;
+import org.slim.provider.SlimSettings;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -554,6 +555,8 @@ public class AudioService extends IAudioService.Stub {
     private boolean mDockAudioMediaEnabled = true;
 
     private int mDockState = Intent.EXTRA_DOCK_STATE_UNDOCKED;
+
+    private boolean mVolumeKeysControlMediaStream;
 
     // Used when safe volume warning message display is requested by setStreamVolume(). In this
     // case, the new requested volume, stream type and device are stored in mPendingVolumeCommand
@@ -1140,6 +1143,9 @@ public class AudioService extends IAudioService.Stub {
 
             updateRingerModeAffectedStreams();
             readDockAudioSettings(cr);
+
+            mVolumeKeysControlMediaStream = SlimSettings.System.getIntForUser(cr,
+                    SlimSettings.System.VOLUME_KEYS_CONTROL_MEDIA_STREAM, 0, UserHandle.USER_CURRENT) == 1;
         }
 
         mMuteAffectedStreams = System.getIntForUser(cr,
@@ -3535,9 +3541,15 @@ public class AudioService extends IAudioService.Stub {
                         Log.v(TAG, "getActiveStreamType: Forcing STREAM_MUSIC stream active");
                     return AudioSystem.STREAM_MUSIC;
                     } else {
-                        if (DEBUG_VOL)
-                            Log.v(TAG, "getActiveStreamType: Forcing STREAM_RING b/c default");
-                        return AudioSystem.STREAM_RING;
+                        if (mVolumeKeysControlMediaStream) {
+                            if (DEBUG_VOL)
+                                Log.v(TAG, "getActiveStreamType: Forcing STREAM_MUSIC b/c default setting");
+                            return AudioSystem.STREAM_MUSIC;
+                        } else {
+                            if (DEBUG_VOL)
+                                Log.v(TAG, "getActiveStreamType: Forcing STREAM_RING b/c default");
+                             return AudioSystem.STREAM_RING;
+                        }
                 }
             } else if (isAfMusicActiveRecently(0)) {
                 if (DEBUG_VOL)
@@ -3572,9 +3584,16 @@ public class AudioService extends IAudioService.Stub {
                     if (DEBUG_VOL) Log.v(TAG, "getActiveStreamType: forcing STREAM_MUSIC");
                     return AudioSystem.STREAM_MUSIC;
                 } else {
-                    if (DEBUG_VOL) Log.v(TAG,
-                            "getActiveStreamType: using STREAM_NOTIFICATION as default");
-                    return AudioSystem.STREAM_NOTIFICATION;
+                    if (mVolumeKeysControlMediaStream) {
+                        if (DEBUG_VOL)
+                            Log.v(TAG,
+                                    "getActiveStreamType: using STREAM_MUSIC as default");
+                        return AudioSystem.STREAM_MUSIC;
+                    } else {
+                        if (DEBUG_VOL)
+                            Log.v(TAG, "getActiveStreamType: Forcing STREAM_NOTIFICATION b/c default");
+                        return AudioSystem.STREAM_NOTIFICATION;
+                    }
                 }
             }
             break;
@@ -4672,6 +4691,9 @@ public class AudioService extends IAudioService.Stub {
                 Settings.System.MODE_RINGER_STREAMS_AFFECTED), false, this);
             mContentResolver.registerContentObserver(Settings.Global.getUriFor(
                 Settings.Global.DOCK_AUDIO_MEDIA_ENABLED), false, this);
+            mContentResolver.registerContentObserver(SlimSettings.System.getUriFor(
+                SlimSettings.System.VOLUME_KEYS_CONTROL_MEDIA_STREAM), false, this,
+                UserHandle.USER_ALL);
         }
 
         @Override
@@ -4689,6 +4711,9 @@ public class AudioService extends IAudioService.Stub {
                      */
                     setRingerModeInt(getRingerModeInternal(), false);
                 }
+                mVolumeKeysControlMediaStream = SlimSettings.System.getIntForUser(mContentResolver,
+                        SlimSettings.System.VOLUME_KEYS_CONTROL_MEDIA_STREAM, 0,
+                        UserHandle.USER_CURRENT) == 1;
                 readDockAudioSettings(mContentResolver);
             }
         }
