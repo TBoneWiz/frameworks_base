@@ -18,6 +18,7 @@ package com.android.systemui.statusbar;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
@@ -42,6 +43,10 @@ import com.android.systemui.R;
 import com.android.systemui.statusbar.phone.KeyguardIndicationTextView;
 import com.android.systemui.statusbar.phone.LockIcon;
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 
 /**
  * Controls the indications and error messages shown on the Keyguard
@@ -74,6 +79,7 @@ public class KeyguardIndicationController {
     private int mChargingSpeed;
     private int mChargingCurrent;
     private String mMessageToShowOnScreenOn;
+    private static final String CURRENT_NOW = "/sys/class/power_supply/battery/current_now";
 
     public KeyguardIndicationController(Context context, KeyguardIndicationTextView textView,
                                         LockIcon lockIcon) {
@@ -186,6 +192,42 @@ public class KeyguardIndicationController {
         return mRestingIndication;
     }
 
+    private int getCurrentValue() {
+        File f = null;
+        f = new File(CURRENT_NOW);
+        if (f.exists()) return getCurrentValue(f);
+           return 100000000;
+    }
+
+    private int getCurrentValue(File file) {
+        String line = null;
+        int value = 0;
+        FileInputStream fs = null;
+        DataInputStream ds = null;
+        try {
+            fs = new FileInputStream(file);
+            ds = new DataInputStream(fs);
+            line = ds.readLine();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fs.close();
+                ds.close();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+        if (line != null) {
+            try {
+            value = Integer.parseInt(line);
+            } catch (NumberFormatException nfe) {
+                value = 0;
+            }
+        }
+        return value;
+    }
+
     private String computePowerIndication() {
         if (mPowerCharged) {
             return mContext.getResources().getString(R.string.keyguard_charged);
@@ -202,30 +244,67 @@ public class KeyguardIndicationController {
         final boolean hasChargingTime = chargingTimeRemaining > 0;
 
         int chargingId;
-        switch (mChargingSpeed) {
-            case KeyguardUpdateMonitor.BatteryStatus.CHARGING_FAST:
+        if (getCurrentValue() != 100000000) {
+            if (mChargingCurrent > (mFastThreshold / 1000)) {
                 chargingId = hasChargingTime
                         ? R.string.keyguard_indication_charging_time_fast
                         : R.string.keyguard_plugged_in_charging_fast;
-                break;
-            case KeyguardUpdateMonitor.BatteryStatus.CHARGING_SLOWLY:
+            }
+            else if (mChargingCurrent < (mSlowThreshold / 1000)) {
                 chargingId = hasChargingTime
                         ? R.string.keyguard_indication_charging_time_slowly
                         : R.string.keyguard_plugged_in_charging_slowly;
-                break;
-            default:
+            }
+            else {
                 chargingId = hasChargingTime
                         ? R.string.keyguard_indication_charging_time
                         : R.string.keyguard_plugged_in;
-                break;
+            }
+        }
+        else {
+            switch (mChargingSpeed) {
+                case KeyguardUpdateMonitor.BatteryStatus.CHARGING_FAST:
+                    chargingId = hasChargingTime
+                            ? R.string.keyguard_indication_charging_time_fast
+                            : R.string.keyguard_plugged_in_charging_fast;
+                    break;
+                case KeyguardUpdateMonitor.BatteryStatus.CHARGING_SLOWLY:
+                    chargingId = hasChargingTime
+                            ? R.string.keyguard_indication_charging_time_slowly
+                            : R.string.keyguard_plugged_in_charging_slowly;
+                    break;
+                default:
+                    chargingId = hasChargingTime
+                            ? R.string.keyguard_indication_charging_time
+                            : R.string.keyguard_plugged_in;
+                    break;
+            }
+        }
+
+        String chargingCurrent = "";
+
+        if (mChargingCurrent != 0) {
+            chargingCurrent = "\n" + mChargingCurrent + " mA";
         }
 
         if (hasChargingTime) {
             String chargingTimeFormatted = Formatter.formatShortElapsedTimeRoundingUpToMinutes(
                     mContext, chargingTimeRemaining);
-            return mContext.getResources().getString(chargingId, chargingTimeFormatted);
+            if (getCurrentValue() != 100000000) {        
+                String chargingText = mContext.getResources().getString(chargingId, chargingTimeFormatted);
+                return chargingText + chargingCurrent;
+            }
+            else {
+                return mContext.getResources().getString(chargingId, chargingTimeFormatted);
+            }
         } else {
-            return mContext.getResources().getString(chargingId);
+            if (getCurrentValue() != 100000000) {
+                String chargingText = mContext.getResources().getString(chargingId);
+                return chargingText + chargingCurrent;
+            }
+            else {
+                return mContext.getResources().getString(chargingId);
+            }
         }
     }
 
@@ -236,8 +315,13 @@ public class KeyguardIndicationController {
                     || status.status == BatteryManager.BATTERY_STATUS_FULL;
             mPowerPluggedIn = status.isPluggedIn() && isChargingOrFull;
             mPowerCharged = status.isCharged();
-            mChargingCurrent = status.maxChargingCurrent;
-            mChargingSpeed = status.getChargingSpeed(mSlowThreshold, mFastThreshold);
+            if (getCurrentValue() != 100000000) {
+                mChargingCurrent = getCurrentValue();
+            }
+            else {
+                mChargingCurrent = status.maxChargingCurrent;
+                mChargingSpeed = status.getChargingSpeed(mSlowThreshold, mFastThreshold);
+            }
             updateIndication();
         }
 
