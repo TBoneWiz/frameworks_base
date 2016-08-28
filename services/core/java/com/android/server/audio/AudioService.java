@@ -201,6 +201,10 @@ public class AudioService extends IAudioService.Stub {
         return mPlatformType == AudioSystem.PLATFORM_TELEVISION;
     }
 
+    private boolean mIsHdmiVolCtrlEnabled() {
+       return SlimSettings.Global.getInt(mContext.getContentResolver(), SlimSettings.Global.HDMI_VOLUME_CTRL_ENABLED, 0) == 1;
+    }
+
     /** The controller for the volume UI. */
     private final VolumeController mVolumeController = new VolumeController();
     private final ControllerService mControllerService = new ControllerService();
@@ -540,10 +544,8 @@ public class AudioService extends IAudioService.Stub {
             = new RemoteCallbackList<IAudioRoutesObserver>();
 
     // Devices for which the volume is fixed and VolumePanel slider should be disabled
-    int mFixedVolumeDevices = AudioSystem.DEVICE_OUT_HDMI |
-            AudioSystem.DEVICE_OUT_DGTL_DOCK_HEADSET |
+    int mFixedVolumeDevices = AudioSystem.DEVICE_OUT_DGTL_DOCK_HEADSET |
             AudioSystem.DEVICE_OUT_ANLG_DOCK_HEADSET |
-            AudioSystem.DEVICE_OUT_HDMI_ARC |
             AudioSystem.DEVICE_OUT_SPDIF |
             AudioSystem.DEVICE_OUT_AUX_LINE;
     int mFullVolumeDevices = 0;
@@ -603,6 +605,10 @@ public class AudioService extends IAudioService.Stub {
         mContext = context;
         mContentResolver = context.getContentResolver();
         mAppOps = (AppOpsManager)context.getSystemService(Context.APP_OPS_SERVICE);
+
+        if (!mIsHdmiVolCtrlEnabled()) {
+            mFixedVolumeDevices |= AudioSystem.DEVICE_OUT_HDMI;
+        }
 
         mPlatformType = AudioSystem.getPlatformType(context);
 
@@ -738,7 +744,7 @@ public class AudioService extends IAudioService.Stub {
         if (mHdmiManager != null) {
             synchronized (mHdmiManager) {
                 mHdmiTvClient = mHdmiManager.getTvClient();
-                if (mHdmiTvClient != null) {
+                if (mHdmiTvClient != null || mIsHdmiVolCtrlEnabled()) {
                     mFixedVolumeDevices &= ~AudioSystem.DEVICE_ALL_HDMI_SYSTEM_AUDIO_AND_SPEAKER;
                 }
                 mHdmiPlaybackClient = mHdmiManager.getPlaybackClient();
