@@ -300,6 +300,22 @@ public class AudioManager {
     public static final String EXTRA_MAX_CHANNEL_COUNT = "android.media.extra.MAX_CHANNEL_COUNT";
 
     /**
+     * Broadcast Action: A USB audio device was plugged in or unplugged.
+     *
+     * <p>The intent will have the following extra values:
+     * <ul>
+     *   <li><em>state</em> - 0 for unplugged, 1 for plugged. </li>
+     *   <li><em>card</em> - ALSA card number (integer) </li>
+     *   <li><em>device</em> - ALSA device number (integer) </li>
+     * </ul>
+     * </ul>
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
+    public static final String ACTION_USB_AUDIO_DEVICE_PLUG =
+            "android.media.action.USB_AUDIO_DEVICE_PLUG";
+
+    /**
      * Extra used in {@link #ACTION_HDMI_AUDIO_PLUG} to define the audio encodings supported by
      * the connected HDMI device.
      * The corresponding array of encoding values is only available when the device is plugged in
