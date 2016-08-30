@@ -100,16 +100,20 @@ public class QSPanel extends ViewGroup {
         mDetailSettingsButton = (TextView) mDetail.findViewById(android.R.id.button2);
         mDetailDoneButton = (TextView) mDetail.findViewById(android.R.id.button1);
         updateDetailText();
+        mBrightnessView = LayoutInflater.from(mContext).inflate(
+                R.layout.quick_settings_brightness_dialog, this, false);
         mDetail.setVisibility(GONE);
         mDetail.setClickable(true);
-        mBrightnessView = LayoutInflater.from(context).inflate(
-                R.layout.quick_settings_brightness_dialog, this, false);
         mFooter = new QSFooter(this, context);
         addView(mDetail);
         addView(mBrightnessView);
         addView(mFooter.getView());
         mClipper = new QSDetailClipper(mDetail);
         updateResources();
+
+        boolean brightnessIconEnabled = SlimSettings.System.getIntForUser(
+            mContext.getContentResolver(), SlimSettings.System.QS_SHOW_BRIGHTNESS_ICON,
+                1, UserHandle.USER_CURRENT) == 1;
 
         mBrightnessController = new BrightnessController(getContext(),
                 (ImageView) findViewById(R.id.brightness_icon),
@@ -132,13 +136,23 @@ public class QSPanel extends ViewGroup {
         boolean brightnessSliderEnabled = SlimSettings.System.getIntForUser(
             mContext.getContentResolver(),SlimSettings.System.QS_SHOW_BRIGHTNESS_SLIDER,
                 1, UserHandle.USER_CURRENT) == 1;
+        boolean brightnessIconEnabled = SlimSettings.System.getIntForUser(
+            mContext.getContentResolver(), SlimSettings.System.QS_SHOW_BRIGHTNESS_ICON,
+                1, UserHandle.USER_CURRENT) == 1;
         ToggleSlider brightnessSlider = (ToggleSlider) findViewById(R.id.brightness_slider);
+        ImageView brightnessIcon = (ImageView) findViewById(R.id.brightness_icon);
         if (brightnessSliderEnabled) {
+            if (brightnessIconEnabled) {
+                brightnessIcon.setVisibility(View.VISIBLE);
+            } else {
+                brightnessIcon.setVisibility(View.GONE);
+            }
             mBrightnessView.setVisibility(VISIBLE);
             brightnessSlider.setVisibility(VISIBLE);
         } else {
             mBrightnessView.setVisibility(GONE);
             brightnessSlider.setVisibility(GONE);
+            brightnessIcon.setVisibility(GONE);
         }
         updateResources();
         return brightnessSliderEnabled;
