@@ -113,7 +113,7 @@ public class QSPanel extends ViewGroup {
 
         boolean brightnessIconEnabled = SlimSettings.System.getIntForUser(
             mContext.getContentResolver(), SlimSettings.System.QS_SHOW_BRIGHTNESS_ICON,
-                1, UserHandle.USER_CURRENT) == 1;
+                0, UserHandle.USER_CURRENT) == 1;
 
         mBrightnessController = new BrightnessController(getContext(),
                 (ImageView) findViewById(R.id.brightness_icon),
@@ -138,7 +138,7 @@ public class QSPanel extends ViewGroup {
                 1, UserHandle.USER_CURRENT) == 1;
         boolean brightnessIconEnabled = SlimSettings.System.getIntForUser(
             mContext.getContentResolver(), SlimSettings.System.QS_SHOW_BRIGHTNESS_ICON,
-                1, UserHandle.USER_CURRENT) == 1;
+                0, UserHandle.USER_CURRENT) == 1;
         ToggleSlider brightnessSlider = (ToggleSlider) findViewById(R.id.brightness_slider);
         ImageView brightnessIcon = (ImageView) findViewById(R.id.brightness_icon);
         if (brightnessSliderEnabled) {
