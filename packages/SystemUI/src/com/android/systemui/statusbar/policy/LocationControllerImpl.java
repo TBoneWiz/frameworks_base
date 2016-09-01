@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -67,9 +68,18 @@ public class LocationControllerImpl extends BroadcastReceiver implements Locatio
 
         // Initialize last active mode. If state was off use the default high accuracy mode
         mLastActiveMode = getLocationCurrentState();
-        if(mLastActiveMode == Settings.Secure.LOCATION_MODE_OFF)
-            mLastActiveMode = Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
 
+        // Check if it's a WiFi-only device
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        boolean isWifiOnly = (cm.isNetworkSupported(ConnectivityManager.TYPE_MOBILE) == false);
+
+        if (mLastActiveMode == Settings.Secure.LOCATION_MODE_OFF) {
+            if (isWifiOnly) {
+                mLastActiveMode = Settings.Secure.LOCATION_MODE_SENSORS_ONLY;
+            } else {
+                mLastActiveMode = Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
+            }
+        }
         // Register to listen for changes in location settings.
         IntentFilter filter = new IntentFilter();
         filter.addAction(LocationManager.HIGH_POWER_REQUEST_CHANGE_ACTION);
