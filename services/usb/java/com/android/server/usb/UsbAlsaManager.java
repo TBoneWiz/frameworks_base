@@ -17,7 +17,6 @@
 package com.android.server.usb;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.hardware.usb.UsbConstants;
@@ -25,11 +24,9 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbInterface;
 import android.media.AudioSystem;
 import android.media.IAudioService;
-import android.media.AudioManager;
 import android.media.midi.MidiDeviceInfo;
 import android.os.FileObserver;
 import android.os.Bundle;
-import android.os.UserHandle;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
@@ -151,26 +148,6 @@ public final class UsbAlsaManager {
                 alsaFileAdded(files[i].getName());
             }
         }
-    }
-
-    private void sendDeviceNotification(UsbAudioDevice audioDevice, boolean enabled) {
-        if (DEBUG) {
-            Slog.d(TAG, "sendDeviceNotification(enabled:" + enabled +
-                    " c:" + audioDevice.mCard +
-                    " d:" + audioDevice.mDevice + ")");
-        }
-
-        // send a sticky broadcast containing current USB state
-        Intent intent = new Intent(AudioManager.ACTION_USB_AUDIO_DEVICE_PLUG);
-        intent.addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
-        intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
-        intent.putExtra("state", enabled ? 1 : 0);
-        intent.putExtra("card", audioDevice.mCard);
-        intent.putExtra("device", audioDevice.mDevice);
-        intent.putExtra("hasPlayback", audioDevice.mHasPlayback);
-        intent.putExtra("hasCapture", audioDevice.mHasCapture);
-        intent.putExtra("class", audioDevice.mDeviceClass);
-        mContext.sendStickyBroadcastAsUser(intent, UserHandle.ALL);
     }
 
     // Notifies AudioService when a device is added or removed
@@ -354,7 +331,6 @@ public final class UsbAlsaManager {
         audioDevice.mDeviceDescription = cardRecord.mCardDescription;
 
         notifyDeviceState(audioDevice, true);
-        sendDeviceNotification(audioDevice, true);
 
         return audioDevice;
     }
@@ -463,9 +439,8 @@ public final class UsbAlsaManager {
 
         UsbAudioDevice audioDevice = mAudioDevices.remove(usbDevice);
         if (audioDevice != null) {
-            if (audioDevice.mHasPlayback || audioDevice.mHasCapture) {
+            if (audioDevice.mHasPlayback || audioDevice.mHasPlayback) {
                 notifyDeviceState(audioDevice, false);
-                sendDeviceNotification(audioDevice, false);
 
                 // if there any external devices left, select one of them
                 selectDefaultDevice();
