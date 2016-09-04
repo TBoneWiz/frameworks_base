@@ -17,6 +17,7 @@
 package com.android.server.usb;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.hardware.usb.UsbConstants;
@@ -27,6 +28,7 @@ import android.media.IAudioService;
 import android.media.midi.MidiDeviceInfo;
 import android.os.FileObserver;
 import android.os.Bundle;
+import android.os.UserHandle;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
@@ -148,6 +150,19 @@ public final class UsbAlsaManager {
                 alsaFileAdded(files[i].getName());
             }
         }
+    }
+
+    private void sendDeviceNotification(UsbAudioDevice audioDevice, boolean enabled) {
+        if (DEBUG) {
+            Slog.d(TAG, "sendDeviceNotification(enabled:" + enabled +
+                    " c:" + audioDevice.mCard +
+                    " d:" + audioDevice.mDevice + ")");
+        }
+
+        // send a bogus broadcast to enable USB DAC detection in ViPER4Android
+        Intent intent = new Intent(Intent.ANALOG_AUDIO_DOCK_PLUG);
+        intent.putExtra("state", enabled ? 1 : 0);
+        mContext.sendStickyBroadcastAsUser(intent, UserHandle.ALL);
     }
 
     // Notifies AudioService when a device is added or removed
@@ -331,6 +346,7 @@ public final class UsbAlsaManager {
         audioDevice.mDeviceDescription = cardRecord.mCardDescription;
 
         notifyDeviceState(audioDevice, true);
+        sendDeviceNotification(audioDevice, true);
 
         return audioDevice;
     }
@@ -439,8 +455,9 @@ public final class UsbAlsaManager {
 
         UsbAudioDevice audioDevice = mAudioDevices.remove(usbDevice);
         if (audioDevice != null) {
-            if (audioDevice.mHasPlayback || audioDevice.mHasPlayback) {
+            if (audioDevice.mHasPlayback || audioDevice.mHasCapture) {
                 notifyDeviceState(audioDevice, false);
+                sendDeviceNotification(audioDevice, false);
 
                 // if there any external devices left, select one of them
                 selectDefaultDevice();

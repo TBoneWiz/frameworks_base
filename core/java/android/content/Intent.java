@@ -2507,6 +2507,24 @@ public class Intent implements Parcelable, Cloneable {
     public static final String ACTION_HEADSET_PLUG = android.media.AudioManager.ACTION_HEADSET_PLUG;
 
     /**
+     * Broadcast Action: Bogus intent to enable USB DAC detection in ViPER4Android.
+     * 
+     * This intent is absolutely incorrect for USB DAC detection, but authors of
+     * ViPER4Android decided to use it. It was moved to android.media in L 
+     * To add insult to injury, it was completely removed in M.
+     * 
+     * <p>The intent will have the following extra values:
+     * <ul>
+     *   <li><em>state</em> - 0 for unplugged, 1 for plugged. </li>
+     * </ul>
+     * </ul>
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
+    public static final String ANALOG_AUDIO_DOCK_PLUG =
+            "android.intent.action.ANALOG_AUDIO_DOCK_PLUG";
+
+    /**
      * <p>Broadcast Action: The user has switched on advanced settings in the settings app:</p>
      * <ul>
      *   <li><em>state</em> - A boolean value indicating whether the settings is on or off.</li>
