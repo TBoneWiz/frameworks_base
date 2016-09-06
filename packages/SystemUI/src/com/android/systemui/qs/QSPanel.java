@@ -27,6 +27,7 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Message;
 import android.os.UserHandle;
+import android.os.Vibrator;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -87,6 +88,8 @@ public class QSPanel extends ViewGroup {
     private QSFooter mFooter;
     private boolean mGridContentVisible = true;
 
+    private static final int QS_VIBRATE_MS = 150;
+
     public QSPanel(Context context) {
         this(context, null);
     }
@@ -125,6 +128,15 @@ public class QSPanel extends ViewGroup {
                 announceForAccessibility(
                         mContext.getString(R.string.accessibility_desc_quick_settings));
                 closeDetail();
+                final boolean hapticOnQsTiles = SlimSettings.System.getIntForUser(
+                    mContext.getContentResolver(), SlimSettings.System.VIBRATE_ON_QS_TILES,
+                    0, UserHandle.USER_CURRENT) == 1;
+                if (hapticOnQsTiles) {
+                    Vibrator vibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+                    if (vibrator != null) {
+                        vibrator.vibrate(QS_VIBRATE_MS);
+                    }
+                }
             }
         });
     }
@@ -390,18 +402,45 @@ public class QSPanel extends ViewGroup {
             @Override
             public void onClick(View v) {
                 r.tile.click();
+                final boolean hapticOnQsTiles = SlimSettings.System.getIntForUser(
+                    mContext.getContentResolver(), SlimSettings.System.VIBRATE_ON_QS_TILES,
+                    0, UserHandle.USER_CURRENT) == 1;
+                if (hapticOnQsTiles) {
+                    Vibrator vibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+                    if (vibrator != null) {
+                        vibrator.vibrate(QS_VIBRATE_MS);
+                    }
+                }
             }
         };
         final View.OnClickListener clickSecondary = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 r.tile.secondaryClick();
+                final boolean hapticOnQsTiles = SlimSettings.System.getIntForUser(
+                    mContext.getContentResolver(), SlimSettings.System.VIBRATE_ON_QS_TILES,
+                    0, UserHandle.USER_CURRENT) == 1;
+                if (hapticOnQsTiles) {
+                    Vibrator vibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+                    if (vibrator != null) {
+                        vibrator.vibrate(QS_VIBRATE_MS);
+                    }
+                }
             }
         };
         final View.OnLongClickListener longClick = new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 r.tile.longClick();
+                final boolean hapticOnQsTiles = SlimSettings.System.getIntForUser(
+                    mContext.getContentResolver(), SlimSettings.System.VIBRATE_ON_QS_TILES,
+                    0, UserHandle.USER_CURRENT) == 1;
+                if (hapticOnQsTiles) {
+                    Vibrator vibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+                    if (vibrator != null) {
+                        vibrator.vibrate(QS_VIBRATE_MS);
+                    }
+                }
                 return true;
             }
         };
@@ -473,7 +512,16 @@ public class QSPanel extends ViewGroup {
                 @Override
                 public void onClick(View v) {
                     mHost.startActivityDismissingKeyguard(settingsIntent);
-                }
+                    final boolean hapticOnQsTiles = SlimSettings.System.getIntForUser(
+                        mContext.getContentResolver(), SlimSettings.System.VIBRATE_ON_QS_TILES,
+                        0, UserHandle.USER_CURRENT) == 1;
+                    if (hapticOnQsTiles) {
+                        Vibrator vibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+                        if (vibrator != null) {
+                            vibrator.vibrate(QS_VIBRATE_MS);
+                        }
+                    }
+                 }
             });
 
             mDetailContent.removeAllViews();

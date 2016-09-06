@@ -27,6 +27,8 @@ import android.graphics.Rect;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RippleDrawable;
+import android.os.UserHandle;
+import android.os.Vibrator;
 import android.util.AttributeSet;
 import android.util.MathUtils;
 import android.util.TypedValue;
@@ -53,6 +55,8 @@ import com.android.systemui.statusbar.policy.UserInfoController;
 import com.android.systemui.tuner.TunerService;
 
 import java.text.NumberFormat;
+
+import org.slim.provider.SlimSettings;
 
 /**
  * The view to manage the header area in the expanded status bar.
@@ -129,6 +133,8 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
     private boolean mDetailTransitioning;
 
     private UserInfoController mUserInfoController;
+
+    private static final int QS_VIBRATE_MS = 100;
 
     public StatusBarHeaderView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -547,6 +553,18 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
             PendingIntent showIntent = mNextAlarm.getShowIntent();
             if (showIntent != null) {
                 mActivityStarter.startPendingIntentDismissingKeyguard(showIntent);
+            }
+        } else {
+        }
+
+        final boolean hapticOnQsTiles = SlimSettings.System.getIntForUser(
+            mContext.getContentResolver(), SlimSettings.System.VIBRATE_ON_QS_TILES,
+            0, UserHandle.USER_CURRENT) == 1;
+
+        if (hapticOnQsTiles) {
+            Vibrator vibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+            if (vibrator != null) {
+                vibrator.vibrate(QS_VIBRATE_MS);
             }
         }
     }
