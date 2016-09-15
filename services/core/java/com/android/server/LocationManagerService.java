@@ -2288,6 +2288,11 @@ public class LocationManagerService extends ILocationManager.Stub {
             Receiver receiver = r.mReceiver;
             boolean receiverDead = false;
 
+            if (receiver == null) {
+                Slog.e(TAG, "skipping loc update for System server crash prevention");
+                continue;
+            }
+
             int receiverUserId = UserHandle.getUserId(receiver.mUid);
             if (!isCurrentProfile(receiverUserId) && !isUidALocationProvider(receiver.mUid)) {
                 if (D) {
