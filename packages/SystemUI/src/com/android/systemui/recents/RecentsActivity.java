@@ -136,7 +136,7 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
             if (action.equals(Recents.ACTION_HIDE_RECENTS_ACTIVITY)) {
                 if (intent.getBooleanExtra(Recents.EXTRA_TRIGGERED_FROM_ALT_TAB, false)) {
                     // If we are hiding from releasing Alt-Tab, dismiss Recents to the focused app
-                    dismissRecentsToFocusedTaskOrHome(false);
+                    dismissRecentsToFocusedTaskOrHome(false, false);
                 } else if (intent.getBooleanExtra(Recents.EXTRA_TRIGGERED_FROM_HOME_KEY, false)) {
                     // Otherwise, dismiss Recents to Home
                     dismissRecentsToHomeRaw(true);
@@ -145,7 +145,7 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
                 }
             } else if (action.equals(Recents.ACTION_TOGGLE_RECENTS_ACTIVITY)) {
                 // If we are toggling Recents, then first unfilter any filtered stacks first
-                dismissRecentsToFocusedTaskOrHome(true);
+                dismissRecentsToFocusedTaskOrHome(true, false);
             } else if (action.equals(Recents.ACTION_START_ENTER_ANIMATION)) {
                 // Trigger the enter animation
                 onEnterAnimationTriggered();
@@ -287,20 +287,15 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
     }
 
     /** Dismisses recents if we are already visible and the intent is to toggle the recents view */
-    boolean dismissRecentsToFocusedTaskOrHome(boolean checkFilteredStackState) {
+    boolean dismissRecentsToFocusedTaskOrHome(boolean checkFilteredStackState, boolean fromBackButton) {
         SystemServicesProxy ssp = RecentsTaskLoader.getInstance().getSystemServicesProxy();
         if (ssp.isRecentsTopMost(ssp.getTopMostTask(), null)) {
             // If we currently have filtered stacks, then unfilter those first
             if (checkFilteredStackState &&
                 mRecentsView.unfilterFilteredStacks()) return true;
             // If we have a focused Task, launch that Task now
-            if (mRecentsView.launchFocusedTask()) return true;
-            // If we launched from Home, then return to Home
-            if (mConfig.launchedFromHome) {
-                dismissRecentsToHomeRaw(true);
-                return true;
-            }
-            // Otherwise, try and return to the Task that Recents was launched from
+            if (mRecentsView.launchFocusedTask() && !fromBackButton) return true;
+            // Try and return to the Task that Recents was launched from
             if (mRecentsView.launchPreviousTask()) return true;
             // If none of the other cases apply, then just go Home
             dismissRecentsToHomeRaw(true);
@@ -560,8 +555,8 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
         // Test mode where back does not do anything
         if (mConfig.debugModeEnabled) return;
 
-        // Dismiss Recents to the focused Task or Home
-        dismissRecentsToFocusedTaskOrHome(true);
+        // Dismiss Recents to previous Task or Home
+        dismissRecentsToFocusedTaskOrHome(true, true);
     }
 
     /** Called when debug mode is triggered */
