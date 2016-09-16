@@ -558,7 +558,7 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
         if (mConfig.debugModeEnabled) return;
 
         // Dismiss Recents to previous Task or Home
-        dismissRecentsToFocusedTaskOrHome(true, true);
+        dismissRecentsToFocusedTaskOrHome(false, true);
     }
 
     /** Called when debug mode is triggered */
