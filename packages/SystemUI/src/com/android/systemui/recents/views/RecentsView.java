@@ -50,6 +50,7 @@ import com.android.systemui.recents.model.Task;
 import com.android.systemui.recents.model.TaskStack;
 
 import com.android.systemui.R;
+import org.slim.provider.SlimSettings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -346,16 +347,16 @@ public class RecentsView extends FrameLayout implements TaskStackView.TaskStackV
                     MeasureSpec.makeMeasureSpec(searchBarSpaceBounds.height(), MeasureSpec.EXACTLY));
         }
 
-        boolean showClearAllRecents = Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.SHOW_CLEAR_ALL_RECENTS, 1) == 1;
+        boolean showClearAllRecents = SlimSettings.System.getInt(mContext.getContentResolver(),
+                SlimSettings.System.SHOW_CLEAR_ALL_RECENTS, 1) == 1;
 
         Rect taskStackBounds = new Rect();
         mConfig.getAvailableTaskStackBounds(width, height, mConfig.systemInsets.top,
                 mConfig.systemInsets.right, searchBarSpaceBounds, taskStackBounds);
 
         if (mFloatingButton != null && showClearAllRecents) {
-            int clearRecentsLocation = Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.RECENTS_CLEAR_ALL_LOCATION, Constants.DebugFlags.App.RECENTS_CLEAR_ALL_BOTTOM_RIGHT);
+            int clearRecentsLocation = SlimSettings.System.getInt(mContext.getContentResolver(),
+                    SlimSettings.System.RECENTS_CLEAR_ALL_LOCATION, Constants.DebugFlags.App.RECENTS_CLEAR_ALL_BOTTOM_RIGHT);
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)
                     mFloatingButton.getLayoutParams();
             params.topMargin = taskStackBounds.top;
