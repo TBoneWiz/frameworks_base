@@ -2992,12 +2992,13 @@ public final class ProcessStats implements Parcelable {
             mDead = true;
         }
 
-        private void ensureNotDead() {
+        private boolean ensureNotDead() {
             if (!mDead) {
-                return;
+                return true;
             }
             Slog.wtfStack(TAG, "ProcessState dead: name=" + mName
                     + " pkg=" + mPackage + " uid=" + mUid + " common.name=" + mCommonProcess.mName);
+            return false;
         }
 
         void writeToParcel(Parcel out, long now) {
@@ -3048,7 +3049,9 @@ public final class ProcessStats implements Parcelable {
         }
 
         public void makeActive() {
-            ensureNotDead();
+            if(!ensureNotDead()) {
+                return;
+            }
             mActive = true;
         }
 
@@ -3094,7 +3097,9 @@ public final class ProcessStats implements Parcelable {
         }
 
         void setState(int state, long now) {
-            ensureNotDead();
+            if(!ensureNotDead()) {
+                return;
+            }
             if (mCurState != state) {
                 //Slog.i(TAG, "Setting state in " + mName + "/" + mPackage + ": " + state);
                 commitStateTime(now);
@@ -3181,7 +3186,9 @@ public final class ProcessStats implements Parcelable {
 
         public void addPss(long pss, long uss, boolean always,
                 ArrayMap<String, ProcessStateHolder> pkgList) {
-            ensureNotDead();
+            if(!ensureNotDead()) {
+                return;
+            }
             if (!always) {
                 if (mLastPssState == mCurState && SystemClock.uptimeMillis()
                         < (mLastPssTime+(30*1000))) {
@@ -3256,7 +3263,9 @@ public final class ProcessStats implements Parcelable {
         }
 
         public void reportExcessiveWake(ArrayMap<String, ProcessStateHolder> pkgList) {
-            ensureNotDead();
+            if(!ensureNotDead()) {
+                return;
+            }
             mCommonProcess.mNumExcessiveWake++;
             if (!mCommonProcess.mMultiPackage) {
                 return;
@@ -3268,7 +3277,9 @@ public final class ProcessStats implements Parcelable {
         }
 
         public void reportExcessiveCpu(ArrayMap<String, ProcessStateHolder> pkgList) {
-            ensureNotDead();
+            if(!ensureNotDead()) {
+                return;
+            }
             mCommonProcess.mNumExcessiveCpu++;
             if (!mCommonProcess.mMultiPackage) {
                 return;
@@ -3299,7 +3310,9 @@ public final class ProcessStats implements Parcelable {
         }
 
         public void reportCachedKill(ArrayMap<String, ProcessStateHolder> pkgList, long pss) {
-            ensureNotDead();
+            if(!ensureNotDead()) {
+                return;
+            }
             mCommonProcess.addCachedKill(1, pss, pss, pss);
             if (!mCommonProcess.mMultiPackage) {
                 return;
