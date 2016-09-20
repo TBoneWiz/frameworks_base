@@ -20,9 +20,13 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
+import android.os.RemoteException;
+import android.view.IWindowManager;
 import android.view.WindowManager;
+import android.view.WindowManagerGlobal;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.Toast;
+import org.slim.provider.SlimSettings;
 
 import com.android.internal.R;
 
@@ -37,12 +41,23 @@ public class LockTaskNotify {
     private final H mHandler;
     private AccessibilityManager mAccessibilityManager;
     private Toast mLastToast;
+    private final IWindowManager mWindowManagerService;
 
     public LockTaskNotify(Context context) {
         mContext = context;
         mAccessibilityManager = (AccessibilityManager)
                 mContext.getSystemService(Context.ACCESSIBILITY_SERVICE);
         mHandler = new H();
+        mWindowManagerService = WindowManagerGlobal.getWindowManagerService();
+    }
+
+    private boolean hasNavigationBar() {
+        try {
+            return mWindowManagerService.hasNavigationBar();
+        } catch (RemoteException e) {
+            //ignore
+        }
+        return false;
     }
 
     public void showToast(int lockTaskModeState) {
@@ -50,20 +65,18 @@ public class LockTaskNotify {
     }
 
     public void handleShowToast(int lockTaskModeState) {
-        String text = null;
+        final int textResId;
         if (lockTaskModeState == ActivityManager.LOCK_TASK_MODE_LOCKED) {
-            text = mContext.getString(R.string.lock_to_app_toast_locked);
-        } else if (lockTaskModeState == ActivityManager.LOCK_TASK_MODE_PINNED) {
-            text = mContext.getString(mAccessibilityManager.isEnabled()
-                    ? R.string.lock_to_app_toast_accessible : R.string.lock_to_app_toast);
-        }
-        if (text == null) {
-            return;
+            textResId = R.string.lock_to_app_toast_locked;
+        } else if (lockTaskModeState == ActivityManager.LOCK_TASK_MODE_PINNED && hasNavigationBar()) {
+            textResId = R.string.lock_to_app_toast;
+        } else {
+            textResId = R.string.lock_to_app_toast_no_navbar;
         }
         if (mLastToast != null) {
             mLastToast.cancel();
         }
-        mLastToast = makeAllUserToastAndShow(text);
+        mLastToast = makeAllUserToastAndShow(mContext.getString(textResId));
     }
 
     public void show(boolean starting) {

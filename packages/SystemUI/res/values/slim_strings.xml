@@ -164,4 +164,7 @@
          all of the currently visible notifications. [CHAR LIMIT=10]-->
     <string name="clear_recents">Clear all</string>
 
+    <!-- Screen pinning dialog description (for devices without navbar) -->
+    <string name="screen_pinning_description_no_navbar">This keeps it in view until you press Home button to unpin.</string>
+
 </resources>
