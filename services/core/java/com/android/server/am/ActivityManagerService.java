@@ -6227,6 +6227,8 @@ public final class ActivityManagerService extends ActivityManagerNative
         app.debugging = false;
         app.cached = false;
         app.killedByAm = false;
+        app.killed = false;
+
 
         mHandler.removeMessages(PROC_START_TIMEOUT_MSG, app);
 
