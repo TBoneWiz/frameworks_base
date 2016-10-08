@@ -2644,7 +2644,10 @@ final class ActivityStack {
     }
 
     private void adjustFocusedActivityLocked(ActivityRecord r, String reason) {
-        if (mStackSupervisor.isFrontStack(this) && mService.mFocusedActivity == r) {
+        if (!mStackSupervisor.isFrontStack(this) || (mService.mFocusedActivity != r
+                && mService.mFocusedActivity != null)) {
+            return;
+        } else {
             ActivityRecord next = topRunningActivityLocked(null);
             final String myReason = reason + " adjustFocus";
             if (next != r) {
