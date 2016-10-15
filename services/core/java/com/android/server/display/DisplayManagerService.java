@@ -54,6 +54,7 @@ import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
 import android.view.WindowManagerInternal;
+import android.widget.Toast;
 
 import com.android.server.DisplayThread;
 import com.android.server.LocalServices;
@@ -688,7 +689,9 @@ public final class DisplayManagerService extends SystemService {
 
         Slog.i(TAG, "Display device added: " + info);
         device.mDebugLastLoggedDeviceInfo = info;
-
+        if (info.name.contains("HDMI")) {
+            Toast.makeText(mContext, "HDMI connected", Toast.LENGTH_SHORT).show();
+        }
         mDisplayDevices.add(device);
         addLogicalDisplayLocked(device);
         Runnable work = updateDisplayStateLocked(device);
@@ -737,7 +740,9 @@ public final class DisplayManagerService extends SystemService {
 
         Slog.i(TAG, "Display device removed: " + info);
         device.mDebugLastLoggedDeviceInfo = info;
-
+        if (info.name.contains("HDMI")) {
+            Toast.makeText(mContext, "HDMI disconnected", Toast.LENGTH_SHORT).show();
+        }
         updateLogicalDisplaysLocked();
         scheduleTraversalLocked(false);
     }
