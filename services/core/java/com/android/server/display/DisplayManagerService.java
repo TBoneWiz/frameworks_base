@@ -19,6 +19,7 @@ package com.android.server.display;
 import com.android.internal.util.IndentingPrintWriter;
 
 import android.Manifest;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.SensorManager;
@@ -690,6 +691,12 @@ public final class DisplayManagerService extends SystemService {
         Slog.i(TAG, "Display device added: " + info);
         device.mDebugLastLoggedDeviceInfo = info;
         if (info.name.contains("HDMI")) {
+            if (isLockScreen()) {
+                PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+                PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK
+                     | PowerManager.ACQUIRE_CAUSES_WAKEUP, "TAG");
+                wl.acquire(15000);
+            }
             Toast.makeText(mContext, "HDMI connected", Toast.LENGTH_SHORT).show();
         }
         mDisplayDevices.add(device);
@@ -1525,6 +1532,16 @@ public final class DisplayManagerService extends SystemService {
             return mContext.checkCallingPermission(
                     android.Manifest.permission.CAPTURE_SECURE_VIDEO_OUTPUT)
                     == PackageManager.PERMISSION_GRANTED;
+        }
+    }
+
+    private boolean isLockScreen() {
+        KeyguardManager mkm = (KeyguardManager) mContext
+                .getSystemService(mContext.KEYGUARD_SERVICE);
+        if (mkm.inKeyguardRestrictedInputMode()) {
+            return true;
+        } else {
+            return false;
         }
     }
 
