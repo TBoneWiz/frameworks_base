@@ -224,7 +224,9 @@ class TaskResourceLoader implements Runnable {
                     synchronized(mLoadQueue) {
                         try {
                             mWaitingOnLoadQueue = true;
-                            mLoadQueue.wait();
+                            while(mLoadQueue.isEmpty()) {
+                                mLoadQueue.wait();
+                            }
                             mWaitingOnLoadQueue = false;
                         } catch (InterruptedException ie) {
                             ie.printStackTrace();
