@@ -80,7 +80,8 @@ public class NotificationTemplateViewWrapper extends NotificationViewWrapper {
         // If the icon already has a color filter, we assume that we already forced the icon to be
         // white when we created the notification.
         final Drawable iconDrawable = mIcon != null ? mIcon.getDrawable() : null;
-        mIconForceGraysaleWhenDark = iconDrawable != null && iconDrawable.getColorFilter() != null;
+        mIconForceGraysaleWhenDark = mIcon != null && mIcon.getDrawable() != null
+                && mIcon.getDrawable().getColorFilter() != null;
     }
 
     private ImageView resolveIcon(ImageView largeIcon, ImageView rightIcon) {
