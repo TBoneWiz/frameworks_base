@@ -36,6 +36,7 @@ import com.android.systemui.recents.RecentsActivity;
 import com.android.systemui.recents.views.RecentsView;
 
 import java.util.ArrayList;
+import org.slim.provider.SlimSettings;
 
 /**
  * A helper for the dialogs that show when task debugging is on.
@@ -130,26 +131,37 @@ public class RecentsResizeTaskDialog extends DialogFragment {
             }
         }
         int additionalTasks = 0;
+        final Context context = this.getActivity();
+        boolean multiWindowSingleTask = SlimSettings.System.getInt(context.getContentResolver(),
+                SlimSettings.System.MULTIWINDOW_SINGLE_TASK, 0) == 1;
         switch (arrangement) {
             case PLACE_LEFT:
                 mBounds[0].right = mBounds[0].centerX();
                 mBounds[1].left = mBounds[0].right;
-                additionalTasks = 1;
+                if (!multiWindowSingleTask) {
+                    additionalTasks = 1;
+                }
                 break;
             case PLACE_RIGHT:
                 mBounds[1].right = mBounds[1].centerX();
                 mBounds[0].left = mBounds[1].right;
-                additionalTasks = 1;
+                if (!multiWindowSingleTask) {
+                    additionalTasks = 1;
+                }
                 break;
             case PLACE_TOP:
                 mBounds[0].bottom = mBounds[0].centerY();
                 mBounds[1].top = mBounds[0].bottom;
-                additionalTasks = 1;
+                if (!multiWindowSingleTask) {
+                    additionalTasks = 1;
+                }
                 break;
             case PLACE_BOTTOM:
                 mBounds[1].bottom = mBounds[1].centerY();
                 mBounds[0].top = mBounds[1].bottom;
-                additionalTasks = 1;
+                if (!multiWindowSingleTask) {
+                    additionalTasks = 1;
+                }
                 break;
             case PLACE_TOP_LEFT:  // TL, TR, BL, BR
                 mBounds[0].right = mBounds[0].centerX();
@@ -160,7 +172,9 @@ public class RecentsResizeTaskDialog extends DialogFragment {
                 mBounds[2].top = mBounds[0].bottom;
                 mBounds[3].left = mBounds[0].right;
                 mBounds[3].top = mBounds[0].bottom;
-                additionalTasks = 3;
+                if (!multiWindowSingleTask) {
+                    additionalTasks = 3;
+                }
                 break;
             case PLACE_TOP_RIGHT:  // TR, TL, BR, BL
                 mBounds[0].left = mBounds[0].centerX();
@@ -171,7 +185,9 @@ public class RecentsResizeTaskDialog extends DialogFragment {
                 mBounds[2].top = mBounds[0].bottom;
                 mBounds[3].right = mBounds[0].left;
                 mBounds[3].top = mBounds[0].bottom;
-                additionalTasks = 3;
+                if (!multiWindowSingleTask) {
+                    additionalTasks = 3;
+                }
                 break;
             case PLACE_BOTTOM_LEFT:  // BL, BR, TL, TR
                 mBounds[0].right = mBounds[0].centerX();
@@ -182,7 +198,9 @@ public class RecentsResizeTaskDialog extends DialogFragment {
                 mBounds[2].bottom = mBounds[0].top;
                 mBounds[3].left = mBounds[0].right;
                 mBounds[3].bottom = mBounds[0].top;
-                additionalTasks = 3;
+                if (!multiWindowSingleTask) {
+                    additionalTasks = 3;
+                }
                 break;
             case PLACE_BOTTOM_RIGHT:  // BR, BL, TR, TL
                 mBounds[0].left = mBounds[0].centerX();
@@ -193,7 +211,9 @@ public class RecentsResizeTaskDialog extends DialogFragment {
                 mBounds[2].bottom = mBounds[0].top;
                 mBounds[3].right = mBounds[0].left;
                 mBounds[3].bottom = mBounds[0].top;
-                additionalTasks = 3;
+                if (!multiWindowSingleTask) {
+                    additionalTasks = 3;
+                }
                 break;
             case PLACE_FULL:
                 // Nothing to change.
