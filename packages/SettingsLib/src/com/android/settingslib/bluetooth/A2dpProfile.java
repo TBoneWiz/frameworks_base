@@ -117,10 +117,10 @@ public final class A2dpProfile implements LocalBluetoothProfile {
         if (sinks != null) {
             for (BluetoothDevice sink : sinks) {
                 if (sink.equals(device)) {
-                    // Connect to same device, Ignore it
-                    Log.d(TAG,"Not disconnecting device = " + sink);
-                    return true;
+                    Log.w(TAG, "Connecting to device " + device + " : disconnect skipped");
+                    continue;
                 }
+                mService.disconnect(sink);
             }
         }
         return mService.connect(device);
