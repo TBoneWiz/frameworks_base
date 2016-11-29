@@ -170,7 +170,7 @@ public class BackupManagerService {
     // System-private key used for backing up an app's widget state.  Must
     // begin with U+FFxx by convention (we reserve all keys starting
     // with U+FF00 or higher for system use).
-    static final String KEY_WIDGET_STATE = "\uffed\uffedwidget";
+    static final String KEY_WIDGET_STATE = "\uFFED\uFFEDwidget";
 
     // Historical and current algorithm names
     static final String PBKDF_CURRENT = "PBKDF2WithHmacSHA1";
@@ -2249,14 +2249,15 @@ public class BackupManagerService {
                         } catch (InterruptedException e) {
                             // just bail
                             Slog.w(TAG, "Interrupted: " + e);
-                            return null;
+                            mConnecting = false;
+                            mConnectedAgent = null;
                         }
                     }
 
                     // if we timed out with no connect, abort and move on
                     if (mConnecting == true) {
                         Slog.w(TAG, "Timeout waiting for agent " + app);
-                        return null;
+                        mConnectedAgent = null;
                     }
                     if (DEBUG) Slog.i(TAG, "got agent " + mConnectedAgent);
                     agent = mConnectedAgent;
