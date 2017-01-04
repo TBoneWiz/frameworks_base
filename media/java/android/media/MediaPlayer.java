@@ -2289,10 +2289,7 @@ public class MediaPlayer implements SubtitleController.Listener
     }
 
     private void scanInternalSubtitleTracks() {
-        if (mSubtitleController == null) {
-            Log.d(TAG, "setSubtitleAnchor in MediaPlayer");
-            setSubtitleAnchor();
-        }
+        setSubtitleAnchor();
 
         populateInbandTracks();
 
