@@ -194,9 +194,24 @@ public class KeyguardIndicationController {
 
     private int getCurrentValue() {
         File f = null;
+        File g = null;
         f = new File(CURRENT_NOW);
-        if (f.exists()) return getCurrentValue(f);
-           return 100000000;
+        if (f.exists()) {
+            if (getCurrentValue(f) < 0) {
+                try {
+                    Thread.sleep(500);
+                } catch(InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+                f = null;
+                g = new File(CURRENT_NOW);
+                return getCurrentValue(g);
+            } else {
+                return getCurrentValue(f);
+            }
+        } else {
+             return 100000000;
+        }
     }
 
     private int getCurrentValue(File file) {
@@ -220,7 +235,7 @@ public class KeyguardIndicationController {
         }
         if (line != null) {
             try {
-            value = Integer.parseInt(line);
+                value = Integer.parseInt(line);
             } catch (NumberFormatException nfe) {
                 value = 0;
             }
