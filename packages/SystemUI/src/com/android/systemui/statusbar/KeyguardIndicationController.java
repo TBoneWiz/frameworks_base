@@ -194,7 +194,6 @@ public class KeyguardIndicationController {
 
     private int getCurrentValue() {
         File f = null;
-        File g = null;
         f = new File(CURRENT_NOW);
         if (f.exists()) {
             if (getCurrentValue(f) < 0) {
@@ -203,7 +202,7 @@ public class KeyguardIndicationController {
                 } catch(InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 }
-                f = null;
+                File g = null;
                 g = new File(CURRENT_NOW);
                 return getCurrentValue(g);
             } else {
