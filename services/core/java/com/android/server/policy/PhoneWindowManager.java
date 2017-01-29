@@ -2824,7 +2824,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         if (isPowerOffAlarmMode == 1 && (keyCode == KeyEvent.KEYCODE_HOME
                 || keyCode == KeyEvent.KEYCODE_SEARCH
-                || keyCode == KeyEvent.KEYCODE_MENU)) {
+                || keyCode == KeyEvent.KEYCODE_MENU || keyCode == KeyEvent.KEYCODE_BACK)) {
             return -1;  // ignore the physical key here
         }
 
@@ -5472,6 +5472,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
             case KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK:
             case KeyEvent.KEYCODE_CAMERA:
+            case KeyEvent.KEYCODE_BACK:
                 return false;
         }
         return true;
