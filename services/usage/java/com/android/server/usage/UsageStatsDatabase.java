@@ -39,6 +39,14 @@ import java.util.List;
 class UsageStatsDatabase {
     private static final int CURRENT_VERSION = 3;
 
+    static final int QUERY_FLAG_FETCH_PACKAGES = 1 << 0;
+    static final int QUERY_FLAG_FETCH_CONFIGURATIONS = 1 << 1;
+    static final int QUERY_FLAG_FETCH_EVENTS = 1 << 2;
+    static final int QUERY_FLAG_FETCH_EVERYTHING =
+            QUERY_FLAG_FETCH_PACKAGES |
+            QUERY_FLAG_FETCH_CONFIGURATIONS |
+            QUERY_FLAG_FETCH_EVENTS;
+
     private static final String TAG = "UsageStatsDatabase";
     private static final boolean DEBUG = UsageStatsService.DEBUG;
     private static final String BAK_SUFFIX = ".bak";
@@ -137,7 +145,7 @@ class UsageStatsDatabase {
             try {
                 IntervalStats stats = new IntervalStats();
                 for (int i = start; i < fileCount - 1; i++) {
-                    UsageStatsXml.read(files.valueAt(i), stats);
+                    UsageStatsXml.read(files.valueAt(i), stats, QUERY_FLAG_FETCH_EVERYTHING);
                     if (!checkinAction.checkin(stats)) {
                         return false;
                     }
@@ -340,7 +348,7 @@ class UsageStatsDatabase {
             try {
                 final AtomicFile f = mSortedStatFiles[intervalType].valueAt(fileCount - 1);
                 IntervalStats stats = new IntervalStats();
-                UsageStatsXml.read(f, stats);
+                UsageStatsXml.read(f, stats, QUERY_FLAG_FETCH_EVERYTHING);
                 return stats;
             } catch (IOException e) {
                 Slog.e(TAG, "Failed to read usage stats file", e);
@@ -390,7 +398,7 @@ class UsageStatsDatabase {
      * Find all {@link IntervalStats} for the given range and interval type.
      */
     public <T> List<T> queryUsageStats(int intervalType, long beginTime, long endTime,
-            StatCombiner<T> combiner) {
+            int flags, StatCombiner<T> combiner) {
         synchronized (mLock) {
             if (intervalType < 0 || intervalType >= mIntervalDirs.length) {
                 throw new IllegalArgumentException("Bad interval type " + intervalType);
@@ -443,7 +451,7 @@ class UsageStatsDatabase {
                 }
 
                 try {
-                    UsageStatsXml.read(f, stats);
+                    UsageStatsXml.read(f, stats, flags);
                     if (beginTime < stats.endTime) {
                         combiner.combine(stats, false, results);
                     }
