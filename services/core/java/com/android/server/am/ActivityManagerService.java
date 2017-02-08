@@ -19454,6 +19454,9 @@ public final class ActivityManagerService extends ActivityManagerNative
         int numBServices = 0;
         for (int i=N-1; i>=0; i--) {
             ProcessRecord app = mLruProcesses.get(i);
+            if (app == null) {
+                continue;
+            }
             if (mEnableBServicePropagation && app.serviceb
                     && (app.curAdj == ProcessList.SERVICE_B_ADJ)) {
                 numBServices++;
@@ -19662,6 +19665,9 @@ public final class ActivityManagerService extends ActivityManagerNative
             int curLevel = ComponentCallbacks2.TRIM_MEMORY_COMPLETE;
             for (int i=N-1; i>=0; i--) {
                 ProcessRecord app = mLruProcesses.get(i);
+                if (app == null) {
+                    continue;
+                }
                 if (allChanged || app.procStateChanged) {
                     setProcessTrackerStateLocked(app, trackerMemFactor, now);
                     app.procStateChanged = false;
