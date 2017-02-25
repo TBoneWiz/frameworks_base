@@ -112,6 +112,7 @@ import android.view.WindowManagerPolicy;
 import android.view.WindowManagerPolicy.PointerEventListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 
 import com.android.internal.app.IAssistScreenshotReceiver;
 import com.android.internal.app.IBatteryStats;
@@ -1767,6 +1768,9 @@ public class WindowManagerService extends IWindowManager.Stub
                 tmpRemoveWindowLocked(0, imWin);
                 imWin.mTargetAppToken = null;
                 reAddWindowToListInOrderLocked(imWin);
+                // hide soft input method because there isn't any window associates the soft input method
+                InputMethodManager im = InputMethodManager.getInstance();
+                im.hideSoftInputFromInputMethod(imWin.mToken.token, 0);
                 if (DEBUG_INPUT_METHOD) {
                     Slog.v(TAG, "List with no IM target:");
                     logWindowList(windows, "  ");
