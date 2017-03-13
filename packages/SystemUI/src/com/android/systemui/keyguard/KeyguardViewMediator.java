@@ -1063,12 +1063,16 @@ public class KeyguardViewMediator extends SystemUI {
         if (!lockedOrMissing && shouldWaitForProvisioning()) {
             if (DEBUG) Log.d(TAG, "doKeyguard: not showing because device isn't provisioned"
                     + " and the sim is not locked or missing");
+            setShowingLocked(false);
+            hideLocked();
             return;
         }
 
         if (mLockPatternUtils.isLockScreenDisabled(KeyguardUpdateMonitor.getCurrentUser())
                 && !lockedOrMissing) {
             if (DEBUG) Log.d(TAG, "doKeyguard: not showing because lockscreen is off");
+            setShowingLocked(false);
+            hideLocked();
             return;
         }
 
