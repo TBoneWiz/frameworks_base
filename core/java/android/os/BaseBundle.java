@@ -118,16 +118,18 @@ public class BaseBundle {
      * @param b a Bundle to be copied.
      */
     BaseBundle(BaseBundle b) {
-        if (b.mParcelledData != null) {
-            if (b.mParcelledData == EMPTY_PARCEL) {
-                mParcelledData = EMPTY_PARCEL;
+        synchronized (b) {
+            if (b.mParcelledData != null) {
+                if (b.mParcelledData == EMPTY_PARCEL) {
+                    mParcelledData = EMPTY_PARCEL;
+                } else {
+                    mParcelledData = Parcel.obtain();
+                    mParcelledData.appendFrom(b.mParcelledData, 0, b.mParcelledData.dataSize());
+                    mParcelledData.setDataPosition(0);
+                }
             } else {
-                mParcelledData = Parcel.obtain();
-                mParcelledData.appendFrom(b.mParcelledData, 0, b.mParcelledData.dataSize());
-                mParcelledData.setDataPosition(0);
+                mParcelledData = null;
             }
-        } else {
-            mParcelledData = null;
         }
 
         if (b.mMap != null) {
