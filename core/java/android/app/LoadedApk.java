@@ -566,7 +566,7 @@ public final class LoadedApk {
 
         try {
             java.lang.ClassLoader cl = getClassLoader();
-            if (!mPackageName.equals("android")) {
+            if (!ActivityThread.isSystem()) {
                 initializeJavaContextClassLoader();
             }
             ContextImpl appContext = ContextImpl.createAppContext(mActivityThread, this);
