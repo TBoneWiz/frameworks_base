@@ -50,6 +50,9 @@ JCrypto::JCrypto(
 }
 
 JCrypto::~JCrypto() {
+    if (mCrypto != NULL) {
+        mCrypto->destroyPlugin();
+    }
     mCrypto.clear();
 
     JNIEnv *env = AndroidRuntime::getJNIEnv();
