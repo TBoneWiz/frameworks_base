@@ -220,6 +220,7 @@ public final class ViewRootImpl implements ViewParent,
     boolean mReportNextDraw;
     boolean mFullRedrawNeeded;
     boolean mNewSurfaceNeeded;
+    boolean mTmpRelayoutNeeded;
     boolean mHasHadWindowFocus;
     boolean mLastWasImTarget;
     boolean mWindowsAnimating;
@@ -1544,7 +1545,8 @@ public final class ViewRootImpl implements ViewParent,
         int relayoutResult = 0;
 
         if (mFirst || windowShouldResize || insetsChanged ||
-                viewVisibilityChanged || params != null) {
+                viewVisibilityChanged || params != null ||
+                (mTmpRelayoutNeeded && mViewVisibility == View.VISIBLE)) {
 
             if (viewVisibility == View.VISIBLE) {
                 // If this window is giving internal insets to the window
@@ -2039,6 +2041,7 @@ public final class ViewRootImpl implements ViewParent,
         mWillDrawSoon = false;
         mNewSurfaceNeeded = false;
         mViewVisibility = viewVisibility;
+        mTmpRelayoutNeeded = false;
 
         if (mAttachInfo.mHasWindowFocus && !isInLocalFocusMode()) {
             final boolean imTarget = WindowManager.LayoutParams
@@ -2078,6 +2081,11 @@ public final class ViewRootImpl implements ViewParent,
             if (viewVisibility == View.VISIBLE) {
                 // Try again
                 scheduleTraversals();
+                //the surface may not created because of server's win.mAppToken.clientHidden set true
+                //We set this flag to give another chance to create surface
+                if (!newSurface) {
+                    mTmpRelayoutNeeded = true;
+                }
             } else if (mPendingTransitions != null && mPendingTransitions.size() > 0) {
                 for (int i = 0; i < mPendingTransitions.size(); ++i) {
                     mPendingTransitions.get(i).endChangingAnimations();
