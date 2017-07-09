@@ -178,8 +178,6 @@ public final class PowerManagerService extends SystemService
     // Threshold for proximity check on wakeup
     private static final float PROXIMITY_NEAR_THRESHOLD = 5.0f;
 
-    private static final int BUTTON_ON_DURATION = 5 * 1000;
-
     // Max time (milliseconds) to wait for the sandman to acknowledge dream state changes
     private static final int SANDMAN_RESPONSE_TIMEOUT = 2 * 1000;
 
