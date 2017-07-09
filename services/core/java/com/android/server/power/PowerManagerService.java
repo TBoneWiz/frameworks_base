@@ -202,9 +202,9 @@ public final class PowerManagerService extends SystemService
     private Light mFnLight;
 
     private int mButtonTimeout;
-    private int mButtonBrightness;
+    private int mButtonBrightnessSetting;
     private int mButtonBrightnessSettingDefault;
-    private int mKeyboardBrightness;
+    private int mKeyboardBrightnessSetting;
     private int mKeyboardBrightnessSettingDefault;
 
     private final Object mLock = new Object();
@@ -827,12 +827,19 @@ public final class PowerManagerService extends SystemService
                 Settings.System.BUTTON_BACKLIGHT_TIMEOUT,
                 DEFAULT_BUTTON_ON_DURATION, UserHandle.USER_CURRENT);
 
-        mButtonBrightness = Settings.System.getIntForUser(resolver,
+        final int buttonBrightnessSetting = Settings.System.getIntForUser(resolver,
                 Settings.System.BUTTON_BRIGHTNESS, mButtonBrightnessSettingDefault,
                 UserHandle.USER_CURRENT);
-        mKeyboardBrightness = Settings.System.getIntForUser(resolver,
+        if (buttonBrightnessSetting != mButtonBrightnessSetting) {
+            mButtonBrightnessSetting = buttonBrightnessSetting;
+        }
+
+        final int keyboardBrightnessSetting = Settings.System.getIntForUser(resolver,
                 Settings.System.KEYBOARD_BRIGHTNESS, mKeyboardBrightnessSettingDefault,
                 UserHandle.USER_CURRENT);
+        if (keyboardBrightnessSetting != mKeyboardBrightnessSetting) {
+            mKeyboardBrightnessSetting = keyboardBrightnessSetting;
+        }
 
         mDirty |= DIRTY_SETTINGS;
     }
@@ -1396,6 +1403,51 @@ public final class PowerManagerService extends SystemService
         }
     }
 
+    private void updateButtonBrightnessIfNeededLocked(long now) {
+        if (mButtonsLight != null) {
+            final int oldBrightness = mButtonsLight.getBrightness();
+            final boolean wasOn = mButtonsLight.getBrightness() > 0;
+            final boolean awake = mWakefulness == WAKEFULNESS_AWAKE;
+            final boolean turnOffByTimeout = now >= mLastUserActivityTime + mButtonTimeout;
+            final boolean screenBright = (mUserActivitySummary & USER_ACTIVITY_SCREEN_BRIGHT) != 0;
+            if (awake && wasOn) {
+                int buttonBrightness, keyboardBrightness;
+                if (mButtonBrightnessOverrideFromWindowManager >= 0) {
+                    buttonBrightness = mButtonBrightnessOverrideFromWindowManager;
+                    keyboardBrightness = mButtonBrightnessOverrideFromWindowManager;
+                } else {
+                    buttonBrightness = mButtonBrightnessSetting;
+                    keyboardBrightness = mKeyboardBrightnessSetting;
+                }
+                mKeyboardLight.setBrightness(mKeyboardVisible ? keyboardBrightness : 0);
+                if (turnOffByTimeout || !screenBright) {
+                    mButtonsLight.setBrightness(0);
+                } else if (oldBrightness != buttonBrightness) {
+                    mButtonsLight.setBrightness(buttonBrightness);
+                }
+            } else if (awake && !wasOn) {
+                int buttonBrightness, keyboardBrightness;
+                if (mButtonBrightnessOverrideFromWindowManager >= 0) {
+                    buttonBrightness = mButtonBrightnessOverrideFromWindowManager;
+                    keyboardBrightness = mButtonBrightnessOverrideFromWindowManager;
+                } else {
+                    buttonBrightness = mButtonBrightnessSetting;
+                    keyboardBrightness = mKeyboardBrightnessSetting;
+                }
+                mKeyboardLight.setBrightness(mKeyboardVisible ? keyboardBrightness : 0);
+                if ((mWakefulnessChanging || screenBright) && !turnOffByTimeout) {
+                    mButtonsLight.setBrightness(buttonBrightness);
+                }
+            } else if (!awake && wasOn) {
+                mButtonsLight.setBrightness(0);
+                mKeyboardLight.setBrightness(0);
+            } else if (!screenBright && wasOn) {
+                mButtonsLight.setBrightness(0);
+                mKeyboardLight.setBrightness(0);
+            }
+        }
+    }
+
     /**
      * Updates the global power state based on dirty bits recorded in mDirty.
      *
@@ -1442,7 +1494,10 @@ public final class PowerManagerService extends SystemService
             // Phase 3: Update dream state (depends on display ready signal).
             updateDreamLocked(dirtyPhase2, displayBecameReady);
 
-            // Phase 4: Send notifications, if needed.
+            // Phase 4: Update button lights, if needed.
+            updateButtonBrightnessIfNeededLocked(now);
+
+            // Phase 5: Send notifications, if needed.
             finishWakefulnessChangeIfNeededLocked();
 
             // Phase 5: Update suspend blocker.
@@ -1680,29 +1735,13 @@ public final class PowerManagerService extends SystemService
                     nextTimeout = mLastUserActivityTime
                             + screenOffTimeout - screenDimDuration;
                     if (now < nextTimeout) {
-                        mUserActivitySummary = USER_ACTIVITY_SCREEN_BRIGHT;
-                        if (mWakefulness == WAKEFULNESS_AWAKE) {
-                            int buttonBrightness, keyboardBrightness;
-                            if (mButtonBrightnessOverrideFromWindowManager >= 0) {
-                                buttonBrightness = mButtonBrightnessOverrideFromWindowManager;
-                                keyboardBrightness = mButtonBrightnessOverrideFromWindowManager;
-                            } else {
-                                buttonBrightness = mButtonBrightness;
-                                keyboardBrightness = mKeyboardBrightness;
-                            }
-
-                            mKeyboardLight.setBrightness(mKeyboardVisible ?
-                                    keyboardBrightness : 0);
-                            if (mButtonTimeout != 0
-                                    && now > mLastUserActivityTime + mButtonTimeout) {
-                                mButtonsLight.setBrightness(0);
-                            } else {
-                                mButtonsLight.setBrightness(buttonBrightness);
-                                if (buttonBrightness != 0 && mButtonTimeout != 0) {
-                                    nextTimeout = now + mButtonTimeout;
-                                }
-                            }
+                        if (now > mLastUserActivityTime + mButtonTimeout
+                                && mButtonsLight != null) {
+                            mButtonsLight.setBrightness(0);
+                        } else if (now < mLastUserActivityTime + mButtonTimeout) {
+                            nextTimeout = now + mButtonTimeout;
                         }
+                        mUserActivitySummary = USER_ACTIVITY_SCREEN_BRIGHT;
                     } else {
                         nextTimeout = mLastUserActivityTime + screenOffTimeout;
                         if (now < nextTimeout) {
@@ -3890,12 +3929,12 @@ public final class PowerManagerService extends SystemService
         }
 
         @Override
-        public void setButtonBrightnessOverrideFromWindowManager(int screenBrightness) {
+        public void setButtonBrightnessOverrideFromWindowManager(int bBrightness) {
             mContext.enforceCallingOrSelfPermission(android.Manifest.permission.DEVICE_POWER, null);
 
             final long ident = Binder.clearCallingIdentity();
             try {
-                setButtonBrightnessOverrideFromWindowManagerInternal(screenBrightness);
+                setButtonBrightnessOverrideFromWindowManagerInternal(bBrightness);
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }
