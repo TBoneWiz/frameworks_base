@@ -291,14 +291,18 @@ public class KeyguardBottomAreaView extends FrameLayout implements View.OnClickL
             // Things are not set up yet; reply hazy, ask again later
             return;
         }
-        ResolveInfo resolved = resolveCameraIntent();
-        boolean lsCameraViewEnabled = SlimSettings.System.getIntForUser(
-            mContext.getContentResolver(),SlimSettings.System.LS_SHOW_RIGHT_SHORTCUT,
-                1, UserHandle.USER_CURRENT) == 1;
-        boolean visible = !isCameraDisabledByDpm() && resolved != null
-                && getResources().getBoolean(R.bool.config_keyguardShowCameraAffordance)
-                && lsCameraViewEnabled
-                && mUserSetupComplete;
+        boolean visible = mUserSetupComplete;
+        if (visible) {
+            ResolveInfo resolved = resolveCameraIntent();
+            boolean lsCameraViewEnabled = SlimSettings.System.getIntForUser(
+                mContext.getContentResolver(),SlimSettings.System.LS_SHOW_RIGHT_SHORTCUT,
+                    1, UserHandle.USER_CURRENT) == 1;
+            boolean isCameraDisabled =
+                    (mPhoneStatusBar != null) && !mPhoneStatusBar.isCameraAllowedByAdmin() && !lsCameraViewEnabled;
+        visible = !isCameraDisabled
+                && resolved != null
+                && getResources().getBoolean(R.bool.config_keyguardShowCameraAffordance);
+        }
         mCameraImageView.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
