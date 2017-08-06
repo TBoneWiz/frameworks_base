@@ -391,19 +391,40 @@ public class ExternalStorageProvider extends DocumentsProvider {
     public void deleteDocument(String docId) throws FileNotFoundException {
         final File file = getFileForDocId(docId);
         final File visibleFile = getFileForDocId(docId, true);
-        final boolean isDirectory = file.isDirectory();
-        if (isDirectory) {
-            FileUtils.deleteContents(file);
-        }
-        if (!file.delete()) {
-            throw new IllegalStateException("Failed to delete " + file);
-        }
+        final ContentResolver resolver = getContext().getContentResolver();
+        final Uri externalUri = MediaStore.Files.getContentUri("external");
 
         if (visibleFile != null) {
+            final boolean isDirectory = visibleFile.isDirectory();
+            if (isDirectory) {
+                FileUtils.deleteContents(visibleFile);
+            }
+            if (!visibleFile.delete()) {
+                throw new IllegalStateException("Failed to delete " + visibleFile);
+            }
 
-            final ContentResolver resolver = getContext().getContentResolver();
-            final Uri externalUri = MediaStore.Files.getContentUri("external");
+            // Remove media store entries for any files inside this directory, using
+            // path prefix match. Logic borrowed from MtpDatabase.
+            if (isDirectory) {
+                final String path = visibleFile.getAbsolutePath() + "/";
+                resolver.delete(externalUri,
+                        "_data LIKE ?1 AND lower(substr(_data,1,?2))=lower(?3)",
+                        new String[] { path + "%", Integer.toString(path.length()), path });
+            }
 
+            // Remove media store entry for this exact file.
+            final String path = visibleFile.getAbsolutePath();
+            resolver.delete(externalUri,
+                    "_data LIKE ?1 AND lower(_data)=lower(?2)",
+                    new String[] { path, path });
+        } else {
+            final boolean isDirectory = file.isDirectory();
+            if (isDirectory) {
+                FileUtils.deleteContents(file);
+            }
+            if (!file.delete()) {
+                throw new IllegalStateException("Failed to delete " + file);
+            }
             // Remove media store entries for any files inside this directory, using
             // path prefix match. Logic borrowed from MtpDatabase.
             if (isDirectory) {
