@@ -1171,7 +1171,8 @@ public final class PowerManagerService extends SystemService
                 return false;
             }
 
-            if ((event & PowerManager.USER_ACTIVITY_EVENT_BUTTON) != 0) {
+            if ((event & PowerManager.USER_ACTIVITY_EVENT_BUTTON) != 0
+              && (flags & PowerManager.USER_ACTIVITY_FLAG_NO_BUTTON_LIGHTS) == 0) {
                 mLastButtonActivityTime = eventTime;
             }
 
