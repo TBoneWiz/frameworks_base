@@ -69,6 +69,8 @@ import com.android.systemui.statusbar.policy.PreviewInflater;
 import static android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK;
 import static android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 
+import org.slim.provider.SlimSettings;
+
 /**
  * Implementation for the bottom area of the Keyguard, including camera/phone affordance and status
  * text.
@@ -290,8 +292,12 @@ public class KeyguardBottomAreaView extends FrameLayout implements View.OnClickL
             return;
         }
         ResolveInfo resolved = resolveCameraIntent();
+        boolean lsCameraViewEnabled = SlimSettings.System.getIntForUser(
+            mContext.getContentResolver(),SlimSettings.System.LS_SHOW_RIGHT_SHORTCUT,
+                1, UserHandle.USER_CURRENT) == 1;
         boolean visible = !isCameraDisabledByDpm() && resolved != null
                 && getResources().getBoolean(R.bool.config_keyguardShowCameraAffordance)
+                && lsCameraViewEnabled
                 && mUserSetupComplete;
         mCameraImageView.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
@@ -300,7 +306,10 @@ public class KeyguardBottomAreaView extends FrameLayout implements View.OnClickL
         mLeftIsVoiceAssist = canLaunchVoiceAssist();
         int drawableId;
         int contentDescription;
-        boolean visible = mUserSetupComplete;
+        boolean lsLeftViewEnabled = SlimSettings.System.getIntForUser(
+            mContext.getContentResolver(),SlimSettings.System.LS_SHOW_LEFT_SHORTCUT,
+                1, UserHandle.USER_CURRENT) == 1;
+        boolean visible = mUserSetupComplete && lsLeftViewEnabled;
         if (mLeftIsVoiceAssist) {
             drawableId = R.drawable.ic_mic_26dp;
             contentDescription = R.string.accessibility_voice_assist_button;
