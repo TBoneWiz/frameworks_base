@@ -84,6 +84,8 @@ public class TaskStack {
     /** Detach this stack from its display when animation completes. */
     boolean mDeferDetach;
 
+    boolean mRemoved = false;
+
     // Contains configurations settings that are different from the global configuration due to
     // stack specific operations. E.g. {@link #setBounds}.
     Configuration mOverrideConfig;
