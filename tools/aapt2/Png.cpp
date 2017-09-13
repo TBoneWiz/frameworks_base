@@ -513,7 +513,7 @@ static bool writePng(png_structp writePtr, png_infop infoPtr, PngInfo* info,
         if (kDebug) {
             logger->note() << "adding 9-patch info..." << std::endl;
         }
-        strcpy((char*)unknowns[pIndex].name, "npTc");
+        memcpy((char*)unknowns[pIndex].name, "npTc", 5);
         unknowns[pIndex].data = (png_byte*) info->serialize9Patch();
         unknowns[pIndex].size = info->info9Patch.serializedSize();
         // TODO: remove the check below when everything works
@@ -521,7 +521,7 @@ static bool writePng(png_structp writePtr, png_infop infoPtr, PngInfo* info,
 
         // automatically generated 9 patch outline data
         int chunkSize = sizeof(png_uint_32) * 6;
-        strcpy((char*)unknowns[oIndex].name, "npOl");
+        memcpy((char*)unknowns[oIndex].name, "npOl", 5);
         unknowns[oIndex].data = (png_byte*) calloc(chunkSize, 1);
         png_byte outputData[chunkSize];
         memcpy(&outputData, &info->outlineInsetsLeft, 4 * sizeof(png_uint_32));
@@ -533,7 +533,7 @@ static bool writePng(png_structp writePtr, png_infop infoPtr, PngInfo* info,
         // optional optical inset / layout bounds data
         if (info->haveLayoutBounds) {
             int chunkSize = sizeof(png_uint_32) * 4;
-            strcpy((char*)unknowns[bIndex].name, "npLb");
+            memcpy((char*)unknowns[bIndex].name, "npLb", 5);
             unknowns[bIndex].data = (png_byte*) calloc(chunkSize, 1);
             memcpy(unknowns[bIndex].data, &info->layoutBoundsLeft, chunkSize);
             unknowns[bIndex].size = chunkSize;
