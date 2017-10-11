@@ -874,7 +874,7 @@ public class MediaSessionService extends SystemService implements Monitor {
             return resolvedUserId;
         }
 
-        private void dispatchAdjustVolumeLocked(int suggestedStream, int direction, int flags,
+        private void dispatchAdjustVolumeLocked(final int suggestedStream, final int direction, final int flags,
                 MediaSessionRecord session) {
             if (DEBUG) {
                 String description = session == null ? null : session.toString();
