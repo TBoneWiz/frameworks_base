@@ -295,13 +295,14 @@ public class KeyguardBottomAreaView extends FrameLayout implements View.OnClickL
         if (visible) {
             ResolveInfo resolved = resolveCameraIntent();
             boolean lsCameraViewEnabled = SlimSettings.System.getIntForUser(
-                mContext.getContentResolver(),SlimSettings.System.LS_SHOW_RIGHT_SHORTCUT,
+                    mContext.getContentResolver(),SlimSettings.System.LS_SHOW_RIGHT_SHORTCUT,
                     1, UserHandle.USER_CURRENT) == 1;
             boolean isCameraDisabled =
-                    (mPhoneStatusBar != null) && !mPhoneStatusBar.isCameraAllowedByAdmin() && !lsCameraViewEnabled;
-        visible = !isCameraDisabled
-                && resolved != null
-                && getResources().getBoolean(R.bool.config_keyguardShowCameraAffordance);
+                    (mPhoneStatusBar != null) && !mPhoneStatusBar.isCameraAllowedByAdmin();
+            visible = !isCameraDisabled
+                    && resolved != null
+                    && getResources().getBoolean(R.bool.config_keyguardShowCameraAffordance)
+                    && lsCameraViewEnabled;
         }
         mCameraImageView.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
@@ -335,24 +336,6 @@ public class KeyguardBottomAreaView extends FrameLayout implements View.OnClickL
         PackageManager pm = mContext.getPackageManager();
         return pm.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)
                 && pm.resolveActivity(PHONE_INTENT, 0) != null;
-    }
-
-    private boolean isCameraDisabledByDpm() {
-        final DevicePolicyManager dpm =
-                (DevicePolicyManager) getContext().getSystemService(Context.DEVICE_POLICY_SERVICE);
-        if (dpm != null && mPhoneStatusBar != null) {
-            try {
-                final int userId = ActivityManagerNative.getDefault().getCurrentUser().id;
-                final int disabledFlags = dpm.getKeyguardDisabledFeatures(null, userId);
-                final  boolean disabledBecauseKeyguardSecure =
-                        (disabledFlags & DevicePolicyManager.KEYGUARD_DISABLE_SECURE_CAMERA) != 0
-                                && mPhoneStatusBar.isKeyguardSecure();
-                return dpm.getCameraDisabled(null) || disabledBecauseKeyguardSecure;
-            } catch (RemoteException e) {
-                Log.e(TAG, "Can't get userId", e);
-            }
-        }
-        return false;
     }
 
     private void watchForCameraPolicyChanges() {
