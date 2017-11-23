@@ -1759,7 +1759,7 @@ public class DeviceIdleController extends SystemService
     }
 
     class Shell extends ShellCommand {
-        int userId = UserHandle.USER_SYSTEM;
+        int userId = 0;
 
         @Override
         public int onCommand(String cmd) {
