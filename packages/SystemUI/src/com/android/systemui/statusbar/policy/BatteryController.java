@@ -40,6 +40,7 @@ public class BatteryController extends BroadcastReceiver {
     private boolean mCharging;
     private boolean mCharged;
     private boolean mPowerSave;
+    private boolean mHasReceivedBattery = false;
 
     public BatteryController(Context context) {
         mPowerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -66,6 +67,7 @@ public class BatteryController extends BroadcastReceiver {
         synchronized (mChangeCallbacks) {
             mChangeCallbacks.add(cb);
         }
+        if (!mHasReceivedBattery) return;
         cb.onBatteryLevelChanged(mLevel, mPluggedIn, mCharging);
     }
 
@@ -78,6 +80,7 @@ public class BatteryController extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         final String action = intent.getAction();
         if (action.equals(Intent.ACTION_BATTERY_CHANGED)) {
+            mHasReceivedBattery = true;
             mLevel = (int)(100f
                     * intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0)
                     / intent.getIntExtra(BatteryManager.EXTRA_SCALE, 100));
