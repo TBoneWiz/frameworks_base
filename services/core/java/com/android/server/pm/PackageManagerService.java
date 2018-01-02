@@ -987,6 +987,12 @@ public class PackageManagerService extends IPackageManager.Stub {
             return mIsHistoricalPackageUsageAvailable;
         }
 
+        private boolean mIsFirstBoot = false;
+	
+        boolean isFirstBoot() {
+            return mIsFirstBoot;
+        }
+	
         void write(boolean force) {
             if (force) {
                 writeInternal();
@@ -1076,6 +1082,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                     }
                 } catch (FileNotFoundException expected) {
                     mIsHistoricalPackageUsageAvailable = false;
+                    mIsFirstBoot = true;
                 } catch (IOException e) {
                     Log.w(TAG, "Failed to read package usage times", e);
                 } finally {
@@ -2423,7 +2430,7 @@ public class PackageManagerService extends IPackageManager.Stub {
 
     @Override
     public boolean isFirstBoot() {
-        return !mRestoredSettings;
+        return !mRestoredSettings || mPackageUsage.isFirstBoot();
     }
 
     @Override
