@@ -67,6 +67,7 @@ public class BluetoothTile extends QSTile<QSTile.BooleanState>  {
 
     @Override
     public void setListening(boolean listening) {
+        if (mController == null) return;
         if (listening) {
             mController.addStateChangedCallback(mCallback);
         } else {
