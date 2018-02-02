@@ -187,6 +187,7 @@ public class DndTile extends QSTile<QSTile.BooleanState> {
     public void setListening(boolean listening) {
         if (mListening == listening) return;
         mListening = listening;
+        if (mController == null) return;
         if (mListening) {
             mController.addCallback(mZenCallback);
             Prefs.registerListener(mContext, mPrefListener);
