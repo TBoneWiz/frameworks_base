@@ -152,13 +152,7 @@ public final class UsbAlsaManager {
         }
     }
 
-    private void sendDeviceNotification(UsbAudioDevice audioDevice, boolean enabled) {
-        if (DEBUG) {
-            Slog.d(TAG, "sendDeviceNotification(enabled:" + enabled +
-                    " c:" + audioDevice.mCard +
-                    " d:" + audioDevice.mDevice + ")");
-        }
-
+    private void sendDeviceNotification(boolean enabled) {
         // send a bogus broadcast to enable USB DAC detection in ViPER4Android
         Intent intent = new Intent(Intent.ANALOG_AUDIO_DOCK_PLUG);
         intent.putExtra("state", enabled ? 1 : 0);
@@ -211,6 +205,8 @@ public final class UsbAlsaManager {
                 }
                 mAudioService.setWiredDeviceConnectionState(
                         device, state, address, audioDevice.mDeviceName, TAG);
+                // Dirty hack to send ANALOG_AUDIO_DOCK_PLUG broadcast for ViPER4Android
+                sendDeviceNotification(enabled);
             }
 
             // Capture Device
@@ -346,7 +342,6 @@ public final class UsbAlsaManager {
         audioDevice.mDeviceDescription = cardRecord.mCardDescription;
 
         notifyDeviceState(audioDevice, true);
-        sendDeviceNotification(audioDevice, true);
 
         return audioDevice;
     }
@@ -457,7 +452,6 @@ public final class UsbAlsaManager {
         if (audioDevice != null) {
             if (audioDevice.mHasPlayback || audioDevice.mHasCapture) {
                 notifyDeviceState(audioDevice, false);
-                sendDeviceNotification(audioDevice, false);
 
                 // if there any external devices left, select one of them
                 selectDefaultDevice();
