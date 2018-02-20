@@ -77,6 +77,7 @@ public final class UsbAlsaManager {
         mAlsaDevices = new HashMap<String,AlsaDevice>();
 
     private UsbAudioDevice mAccessoryAudioDevice = null;
+    private UsbAudioDevice mUsbAudioDevice = null;
 
     // UsbMidiDevice for USB peripheral mode (gadget) device
     private UsbMidiDevice mPeripheralMidiDevice = null;
@@ -121,9 +122,47 @@ public final class UsbAlsaManager {
             switch (event) {
                 case FileObserver.CREATE:
                     alsaFileAdded(path);
+                    if (path.startsWith("pcmC") && path.endsWith("p") && mUsbAudioDevice != null) {
+                        int alsaCard = mUsbAudioDevice.mCard;
+                        int alsaDevice = mUsbAudioDevice.mDevice;
+                        String CardPath = "pcmC" + alsaCard + "D" + alsaDevice + "p";
+                        if (path.contains(CardPath)) {
+                            int device = (mUsbAudioDevice == mAccessoryAudioDevice ?
+                                AudioSystem.DEVICE_OUT_USB_ACCESSORY :
+                                AudioSystem.DEVICE_OUT_USB_DEVICE);
+                            String address = AudioService.makeAlsaAddressString(alsaCard, alsaDevice);
+                            int state = 1;
+                            try {
+                                mAudioService.setWiredDeviceConnectionState(
+                                    device, state, address, mUsbAudioDevice.mDeviceName, TAG);
+                                sendDeviceNotification(true);
+                            } catch (RemoteException e) {
+                                Slog.e(TAG, "RemoteException in setWiredDeviceConnectionState");
+                            }
+                        }
+                    }
                     break;
                 case FileObserver.DELETE:
                     alsaFileRemoved(path);
+                    if (path.startsWith("pcmC") && path.endsWith("p") && mUsbAudioDevice != null) {
+                        int alsaCard = mUsbAudioDevice.mCard;
+                        int alsaDevice = mUsbAudioDevice.mDevice;
+                        String CardPath = "pcmC" + alsaCard + "D" + alsaDevice + "p";
+                        if (path.contains(CardPath)) {
+                            int device = (mUsbAudioDevice == mAccessoryAudioDevice ?
+                                AudioSystem.DEVICE_OUT_USB_ACCESSORY :
+                                AudioSystem.DEVICE_OUT_USB_DEVICE);
+                            String address = AudioService.makeAlsaAddressString(alsaCard, alsaDevice);
+                            int state = 0;
+                            try {
+                                mAudioService.setWiredDeviceConnectionState(
+                                    device, state, address, mUsbAudioDevice.mDeviceName, TAG);
+                                sendDeviceNotification(false);
+                            } catch (RemoteException e) {
+                                Slog.e(TAG, "RemoteException in setWiredDeviceConnectionState");
+                            }
+                        }
+                    }
                     break;
             }
         }
@@ -341,6 +380,7 @@ public final class UsbAlsaManager {
         audioDevice.mDeviceName = cardRecord.mCardName;
         audioDevice.mDeviceDescription = cardRecord.mCardDescription;
 
+        mUsbAudioDevice = audioDevice;
         notifyDeviceState(audioDevice, true);
 
         return audioDevice;
@@ -452,7 +492,8 @@ public final class UsbAlsaManager {
         if (audioDevice != null) {
             if (audioDevice.mHasPlayback || audioDevice.mHasCapture) {
                 notifyDeviceState(audioDevice, false);
-
+                mUsbAudioDevice = null;
+                
                 // if there any external devices left, select one of them
                 selectDefaultDevice();
             }
