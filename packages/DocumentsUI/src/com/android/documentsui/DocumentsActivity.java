@@ -622,7 +622,14 @@ public class DocumentsActivity extends BaseActivity {
         if (mDrawerToggle != null && mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-        return super.onOptionsItemSelected(item);
+
+        final int id = item.getItemId();
+        if (id == R.id.menu_paste) {
+            onPasteRequested();
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
