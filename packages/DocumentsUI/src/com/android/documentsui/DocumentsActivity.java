@@ -588,7 +588,7 @@ public class DocumentsActivity extends BaseActivity {
                 || mState.action == ACTION_BROWSE);
         if (mState.action == ACTION_CREATE
                 || mState.action == ACTION_OPEN_TREE
-                || mState.action == ACTION_OPEN_COPY_DESTINATION) {
+                || mState.action == ACTION_OPEN_COPY_DESTINATION || mState.action == ACTION_STANDALONE) {
             createDir.setVisible(cwd != null && cwd.isCreateSupported());
             mSearchManager.showMenu(false);
 
@@ -626,6 +626,9 @@ public class DocumentsActivity extends BaseActivity {
         final int id = item.getItemId();
         if (id == R.id.menu_paste) {
             onPasteRequested();
+            return true;
+        } else if (id == R.id.menu_create_dir) {
+            CreateDirectoryFragment.show(getFragmentManager());
             return true;
         } else {
             return super.onOptionsItemSelected(item);
