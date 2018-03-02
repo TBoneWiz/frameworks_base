@@ -535,6 +535,7 @@ public class DirectoryFragment extends Fragment {
             final MenuItem share = menu.findItem(R.id.menu_share);
             final MenuItem delete = menu.findItem(R.id.menu_delete);
             final MenuItem copy = menu.findItem(R.id.menu_copy);
+            final MenuItem copyto = menu.findItem(R.id.menu_copyto);
             final MenuItem cut = menu.findItem(R.id.menu_cut);
 
             final boolean manageOrBrowse = (state.action == ACTION_MANAGE
@@ -546,7 +547,7 @@ public class DirectoryFragment extends Fragment {
             share.setVisible(manageOrBrowse || stdMode);
             delete.setVisible(manageOrBrowse || stdMode);
             // Disable copying from the Recents view.
-            copy.setVisible(manageOrBrowse && mType != TYPE_RECENT_OPEN);
+            copyto.setVisible(manageOrBrowse && mType != TYPE_RECENT_OPEN);
 
             return true;
         }
@@ -572,6 +573,14 @@ public class DirectoryFragment extends Fragment {
                 mode.finish();
                 return true;
 
+            } else if (id == R.id.menu_cut) {
+                onCutDocuments(docs);
+                mode.finish();
+                return true;
+            } else if (id == R.id.menu_copy) {
+                onCopyDocuments(docs);
+                mode.finish();
+                return true;
             } else if (id == R.id.menu_share) {
                 onShareDocuments(docs);
                 mode.finish();
@@ -582,8 +591,8 @@ public class DirectoryFragment extends Fragment {
                 mode.finish();
                 return true;
 
-            } else if (id == R.id.menu_copy) {
-                onCopyDocuments(docs);
+            } else if (id == R.id.menu_copyto) {
+                onCopyDocumentsTo(docs);
                 mode.finish();
                 return true;
             } else if (id == R.id.menu_select_all) {
@@ -593,11 +602,6 @@ public class DirectoryFragment extends Fragment {
                 }
                 updateDisplayState();
                 return true;
-            } else if (id == R.id.menu_cut) {
-                onCutDocuments(docs);
-                mode.finish();
-                return true;
-
             } else {
                 return false;
             }
@@ -785,7 +789,11 @@ public class DirectoryFragment extends Fragment {
         ((DocumentsActivity) getActivity()).setClipboardDocuments(docs, false);
     }
 
-    private void onCopyDocuments(List<DocumentInfo> docs) {
+    private void onCopyDocuments(final List<DocumentInfo> docs) {
+        ((DocumentsActivity) getActivity()).setClipboardDocuments(docs, true);
+    }
+
+    private void onCopyDocumentsTo(List<DocumentInfo> docs) {
         getDisplayState(this).selectedDocumentsForCopy = docs;
 
         // Pop up a dialog to pick a destination.  This is inadequate but works for now.
