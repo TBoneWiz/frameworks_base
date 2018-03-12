@@ -443,7 +443,11 @@ abstract public class ManagedServices {
                             + info.service);
                     removeServiceLocked(i);
                     if (info.connection != null) {
+                    try {
                         mContext.unbindService(info.connection);
+                    } catch (IllegalArgumentException e) {
+                        Slog.e(TAG, "failed to unbind " + name, e);
+                    }
                     }
                 }
             }
