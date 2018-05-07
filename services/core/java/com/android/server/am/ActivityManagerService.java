@@ -5002,17 +5002,12 @@ public final class ActivityManagerService extends ActivityManagerNative
         if (true || IS_USER_BUILD) {
             return;
         }
-        String tracesPath = SystemProperties.get("dalvik.vm.stack-trace-file", null);
-        if (tracesPath == null || tracesPath.length() == 0) {
-            return;
-        }
 
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         StrictMode.allowThreadDiskWrites();
         try {
-            final File tracesFile = new File(tracesPath);
-            final File tracesDir = tracesFile.getParentFile();
-            final File tracesTmp = new File(tracesDir, "__tmp__");
+            File tracesDir = new File("/data/anr");
+            File tracesFile = null;
             try {
                 if (!tracesDir.exists()) {
                     tracesDir.mkdirs();
@@ -5022,10 +5017,8 @@ public final class ActivityManagerService extends ActivityManagerNative
                 }
                 FileUtils.setPermissions(tracesDir.getPath(), 0775, -1, -1);  // drwxrwxr-x
 
-                if (tracesFile.exists()) {
-                    tracesTmp.delete();
-                    tracesFile.renameTo(tracesTmp);
-                }
+                tracesFile = File.createTempFile("app_slow", null, tracesDir);
+
                 StringBuilder sb = new StringBuilder();
                 Time tobj = new Time();
                 tobj.set(System.currentTimeMillis());
@@ -5042,14 +5035,14 @@ public final class ActivityManagerService extends ActivityManagerNative
                 fos.close();
                 FileUtils.setPermissions(tracesFile.getPath(), 0666, -1, -1); // -rw-rw-rw-
             } catch (IOException e) {
-                Slog.w(TAG, "Unable to prepare slow app traces file: " + tracesPath, e);
+                Slog.w(TAG, "Unable to prepare slow app traces file: " + tracesFile, e);
                 return;
             }
 
             if (app != null) {
                 ArrayList<Integer> firstPids = new ArrayList<Integer>();
                 firstPids.add(app.pid);
-                dumpStackTraces(tracesPath, firstPids, null, null, null);
+                dumpStackTraces(tracesFile.getAbsolutePath(), firstPids, null, null, null);
             }
 
             File lastTracesFile = null;
@@ -5067,9 +5060,6 @@ public final class ActivityManagerService extends ActivityManagerNative
                 lastTracesFile = curTracesFile;
             }
             tracesFile.renameTo(curTracesFile);
-            if (tracesTmp.exists()) {
-                tracesTmp.renameTo(tracesFile);
-            }
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
