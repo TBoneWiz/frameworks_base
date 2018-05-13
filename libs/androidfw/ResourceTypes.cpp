@@ -811,8 +811,9 @@ const char* ResStringPool::string8At(size_t idx, size_t* outLen) const
                     ALOGW("Bad string block: string #%d is not null-terminated",
                           (int)idx);
                     return NULL;
+                } else {
+                    return (const char*)str;
                 }
-              return (const char*)str;
             } else {
                 ALOGW("Bad string block: string #%d extends to %d, past end at %d\n",
                         (int)idx, (int)(str+encLen-strings), (int)mStringPoolSize);
