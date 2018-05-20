@@ -1255,7 +1255,7 @@ public class ViewPager extends ViewGroup {
         };
 
         SavedState(Parcel in, ClassLoader loader) {
-            super(in, loader);
+            super(in);
             if (loader == null) {
                 loader = getClass().getClassLoader();
             }
