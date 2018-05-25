@@ -2740,6 +2740,9 @@ public class AudioService extends IAudioService.Stub {
     /** @see AudioManager#setBluetoothA2dpOn(boolean) */
     public void setBluetoothA2dpOn(boolean on) {
         synchronized (mBluetoothA2dpEnabledLock) {
+            if (mBluetoothA2dpEnabled == on) {
+                return;
+            }
             mBluetoothA2dpEnabled = on;
             sendMsg(mAudioHandler, MSG_SET_FORCE_BT_A2DP_USE, SENDMSG_QUEUE,
                     AudioSystem.FOR_MEDIA,
